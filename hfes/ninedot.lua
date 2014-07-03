@@ -19,12 +19,18 @@ function ninedot:__init(N, K, boardSize)
 			self.bs.dots[i][j] = 0 
 		end
 	end
-	print(self.bs.dots)
+	--print(self.bs.dots)
 
 	-- Create a data structure for storing an order of lines drawn 
 	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
-	--table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this. 
+	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this. 
 
 	-- The 
 
+end
+
+function ninedot:getMovesAndScores()
+
+	print('getting moves and scores for current ninebot board state ')
+	return {0,0,1,0}, {1,2,3,4}
 end

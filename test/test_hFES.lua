@@ -3,7 +3,9 @@ require 'hfes'
 
 local d = hfes.hFES(1)
 
-d:print()
+d:matchAndMove()
+
+--d:print()
 
 -- print('two')
 -- d2:print()
