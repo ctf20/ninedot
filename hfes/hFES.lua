@@ -1,4 +1,3 @@
-
 --- creates a class "hierarchical Feature Evolution System"
 local hFES = torch.class('hfes.hFES')
 
