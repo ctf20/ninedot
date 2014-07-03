@@ -1,6 +1,5 @@
---require 'strict' --Doesnt seem to work for some reason...!? 
+--require 'strict' 
 require 'hfes'
---print("sss")
 
 local n = 2
 local k = 2
@@ -12,11 +11,4 @@ local d = hfes.hFES(nd)
 for i = 1,k do 
 	d:makeMove()
 end
-
-
---d:print()
-
--- print('two')
--- d2:print()
-
 
