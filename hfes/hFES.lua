@@ -22,11 +22,42 @@ function hFES:makeMove()
 	
 	print("Making move")
 
+	-- local move_id = self.problem:getMoves()
+	-- local score = self.problem:getScores(move_id)
+	-- local chosenMove = self:eGreedyChoice(move_id, score)
+	-- self.problem:updateBoard(chosenMove)
+
 	local move_id = self.problem:getMoves()
-	local score = self.problem:getScores(move_id)
+	local values = self:getValues(move_id)
 	os.exit()
-	local chosenMove = self:eGreedyChoice(move_id, score)
+	local chosenMove = self:eGreedyChoice(move_id,values)
 	self.problem:updateBoard(chosenMove)
+
+end
+
+function hFES:getValues(moves)
+
+	local values = {}
+	for mov = 1, #moves do 
+
+		local matchSet = {}
+		local foveationSet = self.problem:getFoveationSet()		
+		for i = 1, #foveationSet do 
+			local M = self.getMatchSet()
+			table.insert(matchSet, M)  
+		end
+		-- Calculate value from MatchSet 
+
+	end
+
+	return values
+
+end
+
+function hFES:getMatchSet()
+
+-- 
+
 
 end
 
@@ -43,7 +74,7 @@ function hFES:eGreedyChoice(move_id, score)
 		end
 
 	end
-
+	--print(maxChoice)
 	return maxChoice
 
 end
