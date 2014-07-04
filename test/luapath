@@ -1,0 +1,1 @@
+export LUA_PATH="../?/init.lua;./?.lua;/usr/local/share/luajit-2.0.2/?.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/share/lua/5.1/?/init.lua"

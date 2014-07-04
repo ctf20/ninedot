@@ -1,6 +1,7 @@
 --- creates a class "hierarchical Feature Evolution System"
 local hFES = torch.class('hfes.hFES')
 
+
 --- the initializer
 function hFES:__init(problem)
 
@@ -9,6 +10,7 @@ function hFES:__init(problem)
 
 end
 
+
 --- a method
 function hFES:print()
 
@@ -16,23 +18,26 @@ function hFES:print()
 
 end
 
+
 --- Match and Move method 
 function hFES:makeMove()
 	
 	print("Making move")
 
-	-- local move_id = self.problem:getMoves()
-	-- local score = self.problem:getScores(move_id)
-	-- local chosenMove = self:eGreedyChoice(move_id, score)
-	-- self.problem:updateBoard(chosenMove)
-
 	local move_id = self.problem:getMoves()
-	local values = self:getValues(move_id)
-	os.exit()
-	local chosenMove = self:eGreedyChoice(move_id,values)
+	local score = self.problem:getScores(move_id)
+	local chosenMove = self:eGreedyChoice(move_id, score)
 	self.problem:updateBoard(chosenMove)
 
+	-- local move_id = self.problem:getMoves()
+	-- local values = self:getValues(move_id)
+	-- os.exit()
+	-- local chosenMove = self:eGreedyChoice(move_id,values)
+	-- self.problem:updateBoard(chosenMove)
+
 end
+
+
 
 function hFES:getValues(moves)
 
@@ -53,11 +58,35 @@ function hFES:getValues(moves)
 
 end
 
+
+
 function hFES:getMatchSet()
 
 
 
 end
+
+
+
+function hFES:printBoardState()
+	--Call the problem specific board state printer 
+	self.problem:printBoardState()
+
+end
+
+function hFES:resetBoardState()
+	--Call the problem specific board state printer 
+	self.problem:resetBoardState()
+
+end
+
+function hFES:getImage()
+	--Call the problem specific board state printer 
+	return self.problem:getImage()
+
+end
+
+
 
 function hFES:eGreedyChoice(move_id, score)
 
@@ -77,6 +106,10 @@ function hFES:eGreedyChoice(move_id, score)
 
 end
 
+
+
 function hFES:bip()
  print('bip')
 end
+
+

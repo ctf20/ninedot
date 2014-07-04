@@ -25,8 +25,8 @@ function ninedot:__init(N, K, boardSize)
 	local num_dots_made = 0
 	while num_dots_made < self.n do
 		print('here making dots') 
-		local x = math.random(1, boardSize)
-		local y = math.random(1, boardSize)
+		local x = math.random(1, self.boardSize)
+		local y = math.random(1, self.boardSize)
 		if self.bs.dots[x][y] == 0 then 
 			self.bs.dots[x][y] = 1 
 			num_dots_made = num_dots_made + 1
@@ -39,12 +39,50 @@ function ninedot:__init(N, K, boardSize)
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this. 
 end
 
--- --- a method
--- function ninedot:print()
 
---  print("here")
+function ninedot:getImage()
+	--Returns the ninedot stuff to plot. 
+	return self.bs
+end
 
--- end
+
+function ninedot:resetBoardState()
+	
+	-- Create a board for storing dots. 
+	for i = 1, self.boardSize do 
+		self.bs.dots[i] = {}
+		for j = 1, self.boardSize do 
+			self.bs.dots[i][j] = 0 
+		end
+	end
+	--print(self.bs.dots)
+
+	-- Create k random dots 
+	local num_dots_made = 0
+	while num_dots_made < self.n do
+		print('here making dots') 
+		local x = math.random(1, self.boardSize)
+		local y = math.random(1, self.boardSize)
+		if self.bs.dots[x][y] == 0 then 
+			self.bs.dots[x][y] = 1 
+			num_dots_made = num_dots_made + 1
+			print("dot in " .. x .. "," .. y)
+		end 
+	end	 
+	self.bs.pp = {} 
+end
+
+function ninedot:printBoardState()
+
+	print('dot positions')
+
+	print( table.tostring(self.bs.dots))
+	
+	print('pen positions')
+
+	print( table.tostring( self.bs.pp ) )
+end
+
 
 function ninedot:getMoves()
 	local moves = {}	
