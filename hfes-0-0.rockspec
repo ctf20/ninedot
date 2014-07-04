@@ -19,6 +19,5 @@ build = {
 		['hfes.init'] = 'hfes/init.lua',
 		['hfes.ninedot'] = 'hfes/ninedot.lua',
 		['hfes.hFES'] = 'hfes/hFES.lua',
-		['hfes.MatchingUtils'] = 'hfes/MatchingUtils.lua',
     }
 }
