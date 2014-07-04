@@ -1,4 +1,3 @@
-
 --- creates a class "hierarchical Feature Evolution System"
 local hFES = torch.class('hfes.hFES')
 
@@ -29,28 +28,35 @@ function hFES:makeMove()
 
 	local move_id = self.problem:getMoves()
 	local values = self:getValues(move_id)
-	os.exit()
+	-- os.exit()
 	local chosenMove = self:eGreedyChoice(move_id,values)
 	self.problem:updateBoard(chosenMove)
 
 end
 
+-- function hFES:getValues(moves)
+
+-- 	local values = {}
+-- 	for mov = 1, #moves do 
+
+-- 		local matchSet = {}
+-- 		local foveationSet = self.problem:getFoveationSet()		
+-- 		for i = 1, #foveationSet do 
+-- 			local M = self.getMatchSet()
+-- 			table.insert(matchSet, M)  
+-- 		end
+-- 		-- Calculate value from MatchSet 
+
+-- 	end
+
+-- 	return values
+
+-- end
+
 function hFES:getValues(moves)
 
-	local values = {}
-	for mov = 1, #moves do 
-
-		local matchSet = {}
-		local foveationSet = self.problem:getFoveationSet()		
-		for i = 1, #foveationSet do 
-			local M = self.getMatchSet()
-			table.insert(matchSet, M)  
-		end
-		-- Calculate value from MatchSet 
-
-	end
-
-	return values
+	local foveationSet = self.problem:getFoveationSet()
+	os.exit()	
 
 end
 

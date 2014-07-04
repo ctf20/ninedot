@@ -1,4 +1,3 @@
-
 require 'torch'
 hfes = {}
 torch.include('hfes','hFES.lua')

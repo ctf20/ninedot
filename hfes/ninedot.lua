@@ -11,7 +11,7 @@ function ninedot:__init(N, K, boardSize)
 	-- Create a board state table which will store the current board state. 
 	self.bs = {}
 	self.bs.dots = {} --Dot state
-
+	self.bs.dotsCords = {}
 	-- Create a board for storing dots. 
 	for i = 1, self.boardSize do 
 		self.bs.dots[i] = {}
@@ -21,6 +21,8 @@ function ninedot:__init(N, K, boardSize)
 	end
 	--print(self.bs.dots)
 
+	-- create tensor board
+	self.tBoard = torch.Tensor(self.boardSize,self.boardSize):fill(0)
 	-- Create k random dots 
 	local num_dots_made = 0
 	while num_dots_made < self.n do
@@ -28,7 +30,9 @@ function ninedot:__init(N, K, boardSize)
 		local x = math.random(1, boardSize)
 		local y = math.random(1, boardSize)
 		if self.bs.dots[x][y] == 0 then 
-			self.bs.dots[x][y] = 1 
+			self.bs.dots[x][y] = 1
+			self.tBoard[x][y] = 1
+			table.insert(self.bs.dotsCords,{x,y})
 			num_dots_made = num_dots_made + 1
 			print("dot in " .. x .. "," .. y)
 		end 
@@ -36,7 +40,8 @@ function ninedot:__init(N, K, boardSize)
 
 	-- Create a data structure for storing an order of lines drawn 
 	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
-	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this. 
+	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
+	self.foveationWindow = {rows=3,columns=3}
 end
 
 -- --- a method
@@ -202,9 +207,24 @@ function ninedot:updateBoard(chosenMove)
 end
 
 function ninedot:getFoveationSet()
-
-
-	return {{1,2},{2,3}}
+	windows = {}
+	for i,center in ipairs(self.bs.dotsCords) do
+		print(self.bs.dotsCords)
+		print "sub:"
+		print ("" .. (center[1] - math.floor(self.foveationWindow.rows/2)) .. "," ..
+													 (center[1] + math.floor(self.foveationWindow.rows/2)) .. ","
+													 .. (center[2] - math.floor(self.foveationWindow.columns/2)) .. ","
+													 .. (center[2] + math.floor(self.foveationWindow.columns/2)))
+		table.insert(windows,self.tBoard:sub(center[1] - math.floor(self.foveationWindow.rows/2),
+											 center[1] + math.floor(self.foveationWindow.rows/2),
+											 center[2] - math.floor(self.foveationWindow.columns/2),
+											 center[2] + math.floor(self.foveationWindow.columns/2)))
+	end
+	for i,w in ipairs(windows) do
+		print(w)
+	end
+	print(self.tBoard)
+	return windows
 
 end
 
