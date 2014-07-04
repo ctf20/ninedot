@@ -218,14 +218,16 @@ function ninedot:getFoveationSet()
 		table.insert(windows,self.tBoard:sub(center[1] - math.floor(self.foveationWindow.rows/2),
 											 center[1] + math.floor(self.foveationWindow.rows/2),
 											 center[2] - math.floor(self.foveationWindow.columns/2),
-											 center[2] + math.floor(self.foveationWindow.columns/2)))
+											 center[2] + math.floor(self.foveationWindow.columns/2)):clone())
 	end
 	for i,w in ipairs(windows) do
 		print(w)
+		print("match:") 
+		print(hfes.utils.matchTensorWithIgnores(torch.Tensor({{1,0},{1,0}}),torch.Tensor({{1,0},{1,1}})))
 	end
 	print(self.tBoard)
+	for i=1,windows[1]:storage():size() do
+		print(windows[1]:storage()[i])
+	end
 	return windows
-
 end
-
-
