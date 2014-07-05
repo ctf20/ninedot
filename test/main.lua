@@ -36,7 +36,6 @@ function love.update(dt)
 		step = 1 
 	end
 
-
 	-- if love.keyboard.isDown("left") then
 	--    hero.x = hero.x - hero.speed*dt
 	-- elseif love.keyboard.isDown("right") then
@@ -56,6 +55,7 @@ local stuffToDraw = d:getImage()
 	----------------
 	local x = 100 
 	local y = 100 
+	love.graphics.setColor(255,255,0,255)
 	-- Draw the board
 	for i = 1, b do 
 		for j = 1, b do 
@@ -74,10 +74,22 @@ local stuffToDraw = d:getImage()
 	love.graphics.setLineWidth( 10 )
 	if #stuffToDraw.pp > 1 then 
 		for i = 1, #stuffToDraw.pp-1 do 
-			  print("DRAWING LINE")
+			  
 			  love.graphics.line(x + 50*stuffToDraw.pp[i][1],y + 50*stuffToDraw.pp[i][2], x + 50*stuffToDraw.pp[i+1][1], y + 50*stuffToDraw.pp[i+1][2])
 
 		end	
+	
+	elseif #stuffToDraw.pp == 1 then  
+		--Draw the start pen position 
+		
+		love.graphics.setColor(100,100,100,255)
+		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[1][1], y + 50*stuffToDraw.pp[1][2] , 20, 200 )
+		
+	end
+	--Draw final pen position 
+	if #stuffToDraw.pp > 1 then 
+		love.graphics.setColor(0,0,255,255)
+		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[#stuffToDraw.pp][1], y + 50*stuffToDraw.pp[#stuffToDraw.pp][2] , 10, 200 )
 	end
 
 
