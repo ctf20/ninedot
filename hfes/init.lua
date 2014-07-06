@@ -27,6 +27,8 @@ function hfes.utils.matchTensorWithIgnores(template,pattern)
 end
 
 torch.include('hfes','hFES.lua')
+torch.include('hfes','Classifier.lua')
+torch.include('hfes','GridClassifier.lua')
 torch.include('hfes','ninedot.lua')
 
 return hfes

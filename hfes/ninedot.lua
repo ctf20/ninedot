@@ -26,8 +26,13 @@ function ninedot:__init(N, K, boardSize)
 	self.boardDiag = math.ceil(math.sqrt(self.boardSize^2+self.boardSize^2))
 	if self.boardDiag % 2 == 0 then
 		self.boardDiag = self.boardDiag + 1
+	end
 	self.pseudoTBoard = torch.Tensor(3*self.boardDiag,3*self.boardDiag):fill(0)
 	self.pseudoWidth = self.boardDiag*3 / 2
+	self.largeBoardWidth = 3*self.boardDiag
+
+	print("boardSize:" .. self.boardSize)
+	print("largeBoardWidth:" .. self.largeBoardWidth)
 	-- Create k random dots 
 	local num_dots_made = 0
 	while num_dots_made < self.n do
@@ -42,8 +47,8 @@ function ninedot:__init(N, K, boardSize)
 			print("dot in " .. x .. "," .. y)
 		end 
 	end
-	a = self.boardDiag+math.floor(self.boardSize/2)
-	b = self.boardDiag+math.floor(self.boardSize/2)+self.boardSize-1
+	local a = math.floor((self.largeBoardWidth/2)-(self.boardSize/2)+1)
+	local b = a + self.boardSize - 1
 	print("a:" .. a)
 	print("b:" .. b)
 	self.pseudoTBoard[{{a,
@@ -220,77 +225,120 @@ function ninedot:updateBoard(chosenMove)
 
 end
 
+-- function ninedot:getFoveationSet()
+-- 	local allFoveationWindows = {}
+-- 	-- the center will be determined by the foveation window
+-- 	for i,center in ipairs(self.bs.dotsCords) do
+-- 		-- we may have to loop over different classifier sizes
+-- 		centerRelativeToLargeBoard = {center[1]+self.boardDiag+math.floor(self.boardSize/2),center[2]+self.boardDiag+math.floor(self.boardSize/2)}
+-- 		print("c rel:")
+-- 		print(centerRelativeToLargeBoard)
+-- 		local foveationWindow = {dots={},lines={},lastP={}}
+-- 		local row_min = centerRelativeToLargeBoard[1] - math.floor(self.foveationWindow.rows/2)
+-- 		local row_max = centerRelativeToLargeBoard[1] + math.floor(self.foveationWindow.rows/2)
+-- 		local col_min = centerRelativeToLargeBoard[2] - math.floor(self.foveationWindow.columns/2)
+-- 		local col_max = centerRelativeToLargeBoard[2] + math.floor(self.foveationWindow.columns/2)
+
+-- 		-- print(self.bs.dotsCords)
+-- 		print(self.tBoard)
+-- 		print("center:")
+-- 		print(center)
+-- 		print "sub:"
+-- 		print ("" .. row_min .. "," .. row_max .. "," .. col_min .. "," .. col_max)
+-- 		print(self.pseudoTBoard)
+-- 		foveationWindow.dots = self.pseudoTBoard:sub(row_min,
+-- 												 	 row_max,
+-- 												 	 col_min,
+-- 												 	 col_max):clone()
+-- 		if #self.bs.pp > 1 then
+-- 			for j=1,#self.bs.pp-1 do
+-- 				if (self.bs.pp[j][1] >= row_min and self.bs.pp[j][1] <= row_max) and
+-- 				   (self.bs.pp[j][2] >= col_min and self.bs.pp[j][2] <= col_max) and
+-- 				   (self.bs.pp[j+1][1] >= row_min and self.bs.pp[j+1][1] <= row_max) and
+-- 				   (self.bs.pp[j+1][2] >= col_min and self.bs.pp[j+1][2] <= col_max) then
+-- 					table.insert(foveationWindow.lines,{{self.bs.pp[j][1]-row_min+1,self.bs.pp[j][2]-col_min+1},
+-- 														{self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}})
+-- 					if j+1 == #self.bs.pp then
+-- 						foveationWindow.lastP = {self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}
+-- 					end
+-- 				end
+-- 			end
+-- 		end
+
+
+-- 		foveationWindow.lines = torch.Tensor(foveationWindow.lines)
+-- 		print("foveationWindow:")
+-- 		print(foveationWindow.dots)
+-- 		print("pps:")
+-- 		print(foveationWindow.lines)
+-- 		print("lastP:")
+-- 		print(foveationWindow.lastP)
+-- 		foveationWindow.lastP = torch.Tensor(foveationWindow.lastP)
+-- 		table.insert(allFoveationWindows,foveationWindow)
+-- 	end
+-- 	-- for i,w in ipairs(windows) do
+-- 	-- 	print(w)
+-- 	-- 	print("match:") 
+-- 	-- 	print(hfes.utils.matchTensorWithIgnores(torch.Tensor({{1,0},{1,0}}),torch.Tensor({{1,0},{1,1}})))
+-- 	-- end
+-- 	-- print(self.tBoard)
+-- 	-- for i=1,windows[1]:storage():size() do
+-- 	-- 	print(windows[1]:storage()[i])
+-- 	-- end
+
+-- 	return allFoveationWindows
+-- end
+
 function ninedot:getFoveationSet()
-	local allFoveationWindows = {}
-	-- the center will be determined by the foveation window
+	local foveationWindows = {}
+	local lPPS = self:createLargeBoardPPS(self.bs.pp)
 	for i,center in ipairs(self.bs.dotsCords) do
-		-- we may have to loop over different classifier sizes
-		centerRelativeToLargeBoard = {center[1]+self.boardDiag+math.floor(self.boardSize/2),center[2]+self.boardDiag+math.floor(self.boardSize/2)}
-		print("c rel:")
-		print(centerRelativeToLargeBoard)
-		local foveationWindow = {dots={},lines={},lastP={}}
-		local row_min = centerRelativeToLargeBoard[1] - math.floor(self.foveationWindow.rows/2)
-		local row_max = centerRelativeToLargeBoard[1] + math.floor(self.foveationWindow.rows/2)
-		local col_min = centerRelativeToLargeBoard[2] - math.floor(self.foveationWindow.columns/2)
-		local col_max = centerRelativeToLargeBoard[2] + math.floor(self.foveationWindow.columns/2)
-
-		-- print(self.bs.dotsCords)
-		print(self.tBoard)
-		print("center:")
-		print(center)
-		print "sub:"
-		print ("" .. row_min .. "," .. row_max .. "," .. col_min .. "," .. col_max)
-		print(self.pseudoTBoard)
-		foveationWindow.dots = self.pseudoTBoard:sub(row_min,
-												 	 row_max,
-												 	 col_min,
-												 	 col_max):clone()
-		if #self.bs.pp > 1 then
-			for j=1,#self.bs.pp-1 do
-				if (self.bs.pp[j][1] >= row_min and self.bs.pp[j][1] <= row_max) and
-				   (self.bs.pp[j][2] >= col_min and self.bs.pp[j][2] <= col_max) and
-				   (self.bs.pp[j+1][1] >= row_min and self.bs.pp[j+1][1] <= row_max) and
-				   (self.bs.pp[j+1][2] >= col_min and self.bs.pp[j+1][2] <= col_max) then
-					table.insert(foveationWindow.lines,{{self.bs.pp[j][1]-row_min+1,self.bs.pp[j][2]-col_min+1},
-														{self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}})
-					if j+1 == #self.bs.pp then
-						foveationWindow.lastP = {self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}
-					end
-				end
-			end
+		for i,size in ipairs({{5,5}}) do
+			local foveationWindow = {}
+			local relCenter = self:getLargeBoardCoordinates(center)
+			print("center:")
+			print(center)
+			print("relCenter")
+			print(relCenter)
+			local x = self.tBoard:clone()
+			x[center[1]][center[2]] = 9
+			print(x)
+			-- local k = self.pseudoTBoard:clone()
+			-- k[relCenter[1]][relCenter[2]] = 9
+			-- print(k)
+			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
+			print(foveationWindow.dots)
+			foveationWindow.lines = self:extractLinesInLargeWindow(foveationWindow,lPPS)
+			print("lines")
+			print(foveationWindow.lines)
+			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
+			print("lastPP")
+			print(foveationWindow.lastPP)
 		end
-
-
-		foveationWindow.lines = torch.Tensor(foveationWindow.lines)
-		print("foveationWindow:")
-		print(foveationWindow.dots)
-		print("pps:")
-		print(foveationWindow.lines)
-		print("lastP:")
-		print(foveationWindow.lastP)
-		foveationWindow.lastP = torch.Tensor(foveationWindow.lastP)
-		table.insert(allFoveationWindows,foveationWindow)
+		table.insert(foveationWindows,foveationWindow)
 	end
-	-- for i,w in ipairs(windows) do
-	-- 	print(w)
-	-- 	print("match:") 
-	-- 	print(hfes.utils.matchTensorWithIgnores(torch.Tensor({{1,0},{1,0}}),torch.Tensor({{1,0},{1,1}})))
-	-- end
-	-- print(self.tBoard)
-	-- for i=1,windows[1]:storage():size() do
-	-- 	print(windows[1]:storage()[i])
-	-- end
+	return foveationWindows
+end
 
-	return allFoveationWindows
+function ninedot:createLargeBoardPPS(pps)
+	local lPPS = {}
+	for i,pp in ipairs(pps) do
+		table.insert(lPPS,self:getLargeBoardCoordinates(pp))
+	end
+	return lPPS
 end
 
 function ninedot:getLargeBoardCoordinates(center)
-	local fromLeft = self.largeBoardWidth/2 - math.floor(self.boardSize/2) + center[1]
-	local fromtop = self.largeBoardWidth/2 - math.floor(self.boardSize/2) + center[2]
+	local fromTop = math.floor(self.largeBoardWidth/2 - self.boardSize/2 + center[1])
+	-- print("fl")
+	-- print fromLeft
+	local fromLeft = math.floor(self.largeBoardWidth/2 - self.boardSize/2 + center[2])
 	return {fromTop,fromLeft}
 end
 
-function ninedot:extractLargeWindow(size,centerRelativeToLargeBoard,rows,columns)
+function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
+	print("centerRelativeToLargeBoard")
+	print(centerRelativeToLargeBoard)
 	local row_min = centerRelativeToLargeBoard[1] - math.floor(rows/2)
 	local row_max = centerRelativeToLargeBoard[1] + math.floor(rows/2)
 	local col_min = centerRelativeToLargeBoard[2] - math.floor(columns/2)
@@ -307,6 +355,9 @@ function ninedot:extractLargeWindow(size,centerRelativeToLargeBoard,rows,columns
 end
 
 function ninedot:extractLinesInLargeWindow(window,lPPS)
+	print("ninedot:extractLinesInLargeWindow")
+	print(window)
+	print(lPPS)
 	local lines = {}
 	if #lPPS > 1 then
 		for j=1,#lPPS-1 do
@@ -319,23 +370,15 @@ function ninedot:extractLinesInLargeWindow(window,lPPS)
 			end
 		end
 	end
-	return lines
+	return torch.Tensor(lines)
 end
 
 function ninedot:extractLastPPInLargeWindow(window,lPPS)
 	local lastPP = {}
 	if #lPPS > 1 then
-		lastPP = {lPPS[j+1][1]-window.row_min+1,lPPS[j+1][2]-window.col_min+1}
+		lastPP = {lPPS[#lPPS][1]-window.row_min+1,lPPS[#lPPS][2]-window.col_min+1}
 	end
-	return lastPP
-end
-
-function ninedot:createLargeBoardPPS(pps)
-	local lPPS = {}
-	for i,pp in ipairs(pps) do
-		table.insert(LPPs,self.getLargeBoardCoordinates(pp))
-	end
-	return lPPS
+	return torch.Tensor(lastPP)
 end
 
 function ninedot:createCovering(window,specifity)
