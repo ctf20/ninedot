@@ -18,9 +18,9 @@ function GridClassifier:match(input)
 	return hfes.utils.matchTensor(input,self.grid)
 end
 
-function GridClassifier:createCover(specificity)
-	specifity = specifity or 0.5
-	dotsTemplate = dots:clone()
+function GridClassifier:createCover(dots,specificity)
+	local specifity = specifity or 0.5
+	local dotsTemplate = dots:clone()
 	for i=1,#dotsTemplate:storage() do
 		if math.random() > specifity then
 			dotsTemplate:storage()[i] = -1

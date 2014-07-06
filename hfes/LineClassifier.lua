@@ -8,7 +8,7 @@ end
 
 function LineClassifier:match(input)
 	local allMatched = true
-	if self.lines:storage():size() then
+	if self.lines:storage() ~= nil then
 		for i=1,self.lines:size() do
 			local toMatch = self.lines[i]
 			local matched = false
@@ -27,4 +27,17 @@ function LineClassifier:match(input)
 	return allMatched
 end
 
-function cover
+function LineClassifier:createCover(lines,specificity)
+	local specifity = specifity or 0.5
+	local toAdd = {}
+	if lines:storage() ~= nil then
+		for i=1,lines:size()[1] do
+			if math.random() < specifity then
+				table.insert(toAdd,{lines[i][1],lines[i][2],lines[i][3],lines[i][4]})
+			end
+		end
+	end
+	toAdd = torch.Tensor(toAdd)
+	self.lines = toAdd
+	return toAdd
+end
