@@ -54,7 +54,8 @@ end
 -- end
 
 function hFES:getValues(moves)
-
+	print("moves:")
+	print(moves)
 	local foveationSet = self.problem:getFoveationSet()
 	os.exit()	
 

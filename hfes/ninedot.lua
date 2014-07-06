@@ -23,12 +23,17 @@ function ninedot:__init(N, K, boardSize)
 
 	-- create tensor board
 	self.tBoard = torch.Tensor(self.boardSize,self.boardSize):fill(0)
+	self.boardDiag = math.ceil(math.sqrt(self.boardSize^2+self.boardSize^2))
+	if self.boardDiag % 2 == 0 then
+		self.boardDiag = self.boardDiag + 1
+	self.pseudoTBoard = torch.Tensor(3*self.boardDiag,3*self.boardDiag):fill(0)
+	self.pseudoWidth = self.boardDiag*3 / 2
 	-- Create k random dots 
 	local num_dots_made = 0
 	while num_dots_made < self.n do
 		print('here making dots') 
-		local x = math.random(1, boardSize)
-		local y = math.random(1, boardSize)
+		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
 		if self.bs.dots[x][y] == 0 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1
@@ -37,11 +42,20 @@ function ninedot:__init(N, K, boardSize)
 			print("dot in " .. x .. "," .. y)
 		end 
 	end
-
+	a = self.boardDiag+math.floor(self.boardSize/2)
+	b = self.boardDiag+math.floor(self.boardSize/2)+self.boardSize-1
+	print("a:" .. a)
+	print("b:" .. b)
+	self.pseudoTBoard[{{a,
+						b},
+						{a,
+						b}}]=self.tBoard:clone()
+	print(self.tBoard)
 	-- Create a data structure for storing an order of lines drawn 
-	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {{1,1},{2,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
-	self.foveationWindow = {rows=3,columns=3}
+	self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
+	self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
 end
 
 -- --- a method
@@ -207,27 +221,163 @@ function ninedot:updateBoard(chosenMove)
 end
 
 function ninedot:getFoveationSet()
-	windows = {}
+	local allFoveationWindows = {}
+	-- the center will be determined by the foveation window
 	for i,center in ipairs(self.bs.dotsCords) do
-		print(self.bs.dotsCords)
+		-- we may have to loop over different classifier sizes
+		centerRelativeToLargeBoard = {center[1]+self.boardDiag+math.floor(self.boardSize/2),center[2]+self.boardDiag+math.floor(self.boardSize/2)}
+		print("c rel:")
+		print(centerRelativeToLargeBoard)
+		local foveationWindow = {dots={},lines={},lastP={}}
+		local row_min = centerRelativeToLargeBoard[1] - math.floor(self.foveationWindow.rows/2)
+		local row_max = centerRelativeToLargeBoard[1] + math.floor(self.foveationWindow.rows/2)
+		local col_min = centerRelativeToLargeBoard[2] - math.floor(self.foveationWindow.columns/2)
+		local col_max = centerRelativeToLargeBoard[2] + math.floor(self.foveationWindow.columns/2)
+
+		-- print(self.bs.dotsCords)
+		print(self.tBoard)
+		print("center:")
+		print(center)
 		print "sub:"
-		print ("" .. (center[1] - math.floor(self.foveationWindow.rows/2)) .. "," ..
-													 (center[1] + math.floor(self.foveationWindow.rows/2)) .. ","
-													 .. (center[2] - math.floor(self.foveationWindow.columns/2)) .. ","
-													 .. (center[2] + math.floor(self.foveationWindow.columns/2)))
-		table.insert(windows,self.tBoard:sub(center[1] - math.floor(self.foveationWindow.rows/2),
-											 center[1] + math.floor(self.foveationWindow.rows/2),
-											 center[2] - math.floor(self.foveationWindow.columns/2),
-											 center[2] + math.floor(self.foveationWindow.columns/2)):clone())
+		print ("" .. row_min .. "," .. row_max .. "," .. col_min .. "," .. col_max)
+		print(self.pseudoTBoard)
+		foveationWindow.dots = self.pseudoTBoard:sub(row_min,
+												 	 row_max,
+												 	 col_min,
+												 	 col_max):clone()
+		if #self.bs.pp > 1 then
+			for j=1,#self.bs.pp-1 do
+				if (self.bs.pp[j][1] >= row_min and self.bs.pp[j][1] <= row_max) and
+				   (self.bs.pp[j][2] >= col_min and self.bs.pp[j][2] <= col_max) and
+				   (self.bs.pp[j+1][1] >= row_min and self.bs.pp[j+1][1] <= row_max) and
+				   (self.bs.pp[j+1][2] >= col_min and self.bs.pp[j+1][2] <= col_max) then
+					table.insert(foveationWindow.lines,{{self.bs.pp[j][1]-row_min+1,self.bs.pp[j][2]-col_min+1},
+														{self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}})
+					if j+1 == #self.bs.pp then
+						foveationWindow.lastP = {self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}
+					end
+				end
+			end
+		end
+
+
+		foveationWindow.lines = torch.Tensor(foveationWindow.lines)
+		print("foveationWindow:")
+		print(foveationWindow.dots)
+		print("pps:")
+		print(foveationWindow.lines)
+		print("lastP:")
+		print(foveationWindow.lastP)
+		foveationWindow.lastP = torch.Tensor(foveationWindow.lastP)
+		table.insert(allFoveationWindows,foveationWindow)
 	end
-	for i,w in ipairs(windows) do
-		print(w)
-		print("match:") 
-		print(hfes.utils.matchTensorWithIgnores(torch.Tensor({{1,0},{1,0}}),torch.Tensor({{1,0},{1,1}})))
+	-- for i,w in ipairs(windows) do
+	-- 	print(w)
+	-- 	print("match:") 
+	-- 	print(hfes.utils.matchTensorWithIgnores(torch.Tensor({{1,0},{1,0}}),torch.Tensor({{1,0},{1,1}})))
+	-- end
+	-- print(self.tBoard)
+	-- for i=1,windows[1]:storage():size() do
+	-- 	print(windows[1]:storage()[i])
+	-- end
+
+	return allFoveationWindows
+end
+
+function ninedot:getLargeBoardCoordinates(center)
+	local fromLeft = self.largeBoardWidth/2 - math.floor(self.boardSize/2) + center[1]
+	local fromtop = self.largeBoardWidth/2 - math.floor(self.boardSize/2) + center[2]
+	return {fromTop,fromLeft}
+end
+
+function ninedot:extractLargeWindow(size,centerRelativeToLargeBoard,rows,columns)
+	local row_min = centerRelativeToLargeBoard[1] - math.floor(rows/2)
+	local row_max = centerRelativeToLargeBoard[1] + math.floor(rows/2)
+	local col_min = centerRelativeToLargeBoard[2] - math.floor(columns/2)
+	local col_max = centerRelativeToLargeBoard[2] + math.floor(columns/2)
+	dots = self.pseudoTBoard:sub(row_min,
+							 	 row_max,
+							 	 col_min,
+							 	 col_max):clone()
+	return {dots=dots,
+			row_min=row_min,
+			row_max=row_max,
+			col_min=col_min,
+			col_max=col_max}
+end
+
+function ninedot:extractLinesInLargeWindow(window,lPPS)
+	local lines = {}
+	if #lPPS > 1 then
+		for j=1,#lPPS-1 do
+			if (lPPS[j][1] >= window.row_min and lPPS[j][1] <= window.row_max) and
+			   (lPPS[j][2] >= window.col_min and lPPS[j][2] <= window.col_max) and
+			   (lPPS[j+1][1] >= window.row_min and lPPS[j+1][1] <= window.row_max) and
+			   (lPPS[j+1][2] >= window.col_min and lPPS[j+1][2] <= window.col_max) then
+				table.insert(lines,{{lPPS[j][1]-window.row_min+1,lPPS[j][2]-window.col_min+1},
+													{lPPS[j+1][1]-window.row_min+1,lPPS[j+1][2]-window.col_min+1}})
+			end
+		end
 	end
-	print(self.tBoard)
-	for i=1,windows[1]:storage():size() do
-		print(windows[1]:storage()[i])
+	return lines
+end
+
+function ninedot:extractLastPPInLargeWindow(window,lPPS)
+	local lastPP = {}
+	if #lPPS > 1 then
+		lastPP = {lPPS[j+1][1]-window.row_min+1,lPPS[j+1][2]-window.col_min+1}
 	end
-	return windows
+	return lastPP
+end
+
+function ninedot:createLargeBoardPPS(pps)
+	local lPPS = {}
+	for i,pp in ipairs(pps) do
+		table.insert(LPPs,self.getLargeBoardCoordinates(pp))
+	end
+	return lPPS
+end
+
+function ninedot:createCovering(window,specifity)
+	specifity = specifity or 0.5
+	--- assume window is a torch.Tensor
+	-- covering is made of 3 components:
+	-- 		matching dots
+	-- 		vector of coordinates
+	-- 		last pen position
+	covering = {}
+
+end
+
+function ninedot:createDotsWindowCovering(dots,specifity)
+	specifity = specifity or 0.5
+	dotsTemplate = dots:clone()
+	for i=1,#dotsTemplate:storage() do
+		if math.random() > specifity then
+			dotsTemplate:storage()[i] = -1
+		end
+	end
+	return dotsTemplate
+end
+
+function ninedot:createPPCovering(pp,specifity)
+	specifity = specifity or 0.5
+	toAdd = {}
+	if pp:storage() ~= nil then
+		for i=1,pp:size()[1] do
+			if math.random() < specifity then
+				table.insert(toAdd,{pp[i][1],pp[i][2]})
+			end
+		end
+	end
+	toAdd = torch.Tensor(toAdd)
+	return ppTemplate
+end
+
+function ninedot:createLastPCovering(lastP,specifity)
+	specifity = specifity or 0.5
+	if math.random() > specifity then
+		lastP = torch.Tensor({})
+	end
+	return lastP
 end
