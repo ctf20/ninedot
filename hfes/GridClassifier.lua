@@ -1,4 +1,4 @@
-local GridClassifier,parent = torch.class('hfes.GridClassifier','hfes.Classifier')
+local GridClassifier,parent = torch.class('hfes.GridClassifier','hfes.ClassifierModule')
 
 function GridClassifier:__init(grid)
 	parent.__init(self)
@@ -14,14 +14,14 @@ function GridClassifier:__init(grid)
 end
 
 function GridClassifier:match(input)
-	return util.matchTensor(input,self.grid)
+	return utils.matchTensor(input,self.grid)
 end
 
 function GridClassifier:createCover(dots,specificity)
 	local specificity = specificity or 0.5
 	local dotsTemplate = dots:clone()
 	for i=1,#dotsTemplate:storage() do
-		if math.random() > specifity then
+		if math.random() > specificity then
 			dotsTemplate:storage()[i] = -1
 		end
 	end

@@ -19,6 +19,7 @@ function hFES:print()
 end
 
 
+
 --- Match and Move method 
 function hFES:makeMove()
 	
@@ -26,15 +27,12 @@ function hFES:makeMove()
 
 	local move_id = self.problem:getMoves()
 	local values = self:getValues(move_id)
-	-- os.exit()
-	local chosenMove = self:eGreedyChoice(move_id,values)
-	self.problem:updateBoard(chosenMove)
-
-	-- local move_id = self.problem:getMoves()
-	-- local values = self:getValues(move_id)
-	-- os.exit()
 	-- local chosenMove = self:eGreedyChoice(move_id,values)
 	-- self.problem:updateBoard(chosenMove)
+	
+	local score = self.problem:getScores(move_id) --I'm going to be using the getScores and moving according to get scores for now. 
+	local chosenMove = self:eGreedyChoice(move_id, score)
+	self.problem:updateBoard(chosenMove)
 
 end
 
@@ -60,7 +58,23 @@ function hFES:getValues(moves)
 	print("moves:")
 	print(moves)
 	local foveationSet = self.problem:getFoveationSet()
-	os.exit()	
+	print("len f_set:" .. #foveationSet)
+	for i,f in ipairs(foveationSet) do
+		print("i:" .. i)
+		print("len f:" .. #f.foveationWindows)
+		for j,foveationWindow in ipairs(f.foveationWindows) do
+			print(foveationWindow.dots)
+			print("lines")
+			print(foveationWindow.lines)
+			print("lastPP")
+			print(foveationWindow.lastPP)
+			local classifier = hfes.NineDotClassifier()
+			classifier:buildClassifier(foveationWindow.dots,
+									   foveationWindow.lines,
+									   foveationWindow.lastPP)
+		end
+	end
+		
 
 end
 

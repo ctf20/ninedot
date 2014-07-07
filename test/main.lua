@@ -6,7 +6,7 @@ require 'hfes'
 function love.load()
 
 --Initialize the ninedot problem here. 
-	n = 3
+	n = 9
 	k = 3
 	b = 5 
 	nd = hfes.ninedot(n,k,b)
@@ -46,8 +46,10 @@ end
 
 function love.draw()
 
---Get the data to draw form the problem specificiation 
-local stuffToDraw = d:getImage()
+--Get the data to draw from the problem specificiation 
+local stuffToDrawBig = d:getImage()
+local stuffToDraw = stuffToDrawBig[1]
+local foveations = stuffToDrawBig[2]
 --print(stuffToDraw)
 
 	----------------
@@ -91,6 +93,32 @@ local stuffToDraw = d:getImage()
 		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[#stuffToDraw.pp][1], y + 50*stuffToDraw.pp[#stuffToDraw.pp][2] , 10, 200 )
 	end
 
+	-----------------------------
+	--Draw the foveation windows. 
+	-----------------------------
+	if #foveations > 0 then 
+
+		print("foveations")
+		for i = 1, #foveations do 
+			print(foveations[i].dotCord[1] .." " ..   foveations[i].dotCord[2])
+		end
+
+		--Draw the foveation dot window in the right position. 
+		love.graphics.setColor(255,0,255,255)
+		-- Draw the board
+		fx = foveations[1].dotCord[1]
+		fy = foveations[1].dotCord[2]
+		print ("fx = " .. fx .. " fy = ".. fy)
+		for i = 1, b do 
+			for j = 1, b do 
+				if foveations[1].dots[i][j] == 0 then 
+					 love.graphics.circle( "fill", x + 50 * (i + fx-math.ceil(foveations.windowSize/2)) , y + 50*(j + fy-math.ceil(foveations.windowSize/2)) , 2, 100 )
+				else
+					 love.graphics.circle( "fill", x + 50 * (i + fx-math.ceil(foveations.windowSize/2)), y + 50*(j + fy-math.ceil(foveations.windowSize/2)) , 10, 255 )
+				end
+			end
+		end
+	end
 
  -- -- let's draw some ground
  -- love.graphics.setColor(0,255,0,255)

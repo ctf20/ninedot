@@ -1,5 +1,4 @@
-
-local PointClassifier,parent = torch.class('hfes.PointClassifier','hfes.Classifier')
+local PointClassifier,parent = torch.class('hfes.PointClassifier','hfes.ClassifierModule')
 
 function PointClassifier:__init(point)
 	parent.__init(self)
@@ -15,8 +14,8 @@ function PointClassifier:match(input)
 end
 
 function PointClassifier:createCover(point,specificity)
-	local specifity = specifity or 0.5
-	if math.random() > specifity then 
+	local specificity = specificity or 0.5
+	if math.random() > specificity then 
 		self.point = point
 	else
 		self.point = torch.Tensor()

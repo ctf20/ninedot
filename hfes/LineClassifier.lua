@@ -1,4 +1,4 @@
-local LineClassifier,parent = torch.class('hfes.LineClassifier','hfes.Classifier')
+local LineClassifier,parent = torch.class('hfes.LineClassifier','hfes.ClassifierModule')
 
 function LineClassifier:__init(lines)
 	parent.__init(self)
@@ -7,12 +7,12 @@ end
 
 function LineClassifier:match(input)
 	local allMatched = true
-	if self.lines:storage() ~= nil then --If no lines then match. 
+	if self.lines:storage() ~= nil then
 		for i=1,self.lines:size() do
 			local toMatch = self.lines[i]
 			local matched = false
 			for j=1,input:size() do
-				if util.matchTensor(toMatch,input[j]) then
+				if utils.matchTensor(toMatch,input[j]) then
 					matched = true
 					break
 				end
@@ -29,10 +29,13 @@ end
 function LineClassifier:createCover(lines,specificity)
 	local specificity = specificity or 0.5
 	local toAdd = {}
-	if lines:storage() ~= nil then --Have to use storage() check to see if lines is empty. Cant use size. 
+	if lines:storage() ~= nil then
+		print("lines:" .. lines:size()[1])
 		for i=1,lines:size()[1] do
+			print("line:")
+			print(lines[i])
 			if math.random() < specificity then
-				table.insert(toAdd,{lines[i][1],lines[i][2],lines[i][3],lines[i][4]})
+				table.insert(toAdd,{{lines[i][1][1],lines[i][1][2]},{lines[i][2][1],lines[i][2][2]}})
 			end
 		end
 	end

@@ -4,8 +4,8 @@ function Classifier:__init()
 	print("creating a classifier")
 end
 
-function Classifier:match(input)
+function Classifier:buildClassifier()
 end
 
-function Classifier:cover(input,specificity)
+function Classifier:match()
 end
