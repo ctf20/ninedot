@@ -59,6 +59,7 @@ function hFES:getValues(moves)
 	print(moves)
 	local foveationSet = self.problem:getFoveationSet()
 	print("len f_set:" .. #foveationSet)
+	classifiers = {}
 	for i,f in ipairs(foveationSet) do
 		print("i:" .. i)
 		print("len f:" .. #f.foveationWindows)
@@ -69,9 +70,22 @@ function hFES:getValues(moves)
 			print("lastPP")
 			print(foveationWindow.lastPP)
 			local classifier = hfes.NineDotClassifier()
-			classifier:buildClassifier(foveationWindow.dots,
-									   foveationWindow.lines,
-									   foveationWindow.lastPP)
+			classifier:buildClassifier(	foveationWindow.dots,
+										foveationWindow.lines,
+										foveationWindow.lastPP,
+										1.0
+										)
+			print("classifier grid")
+			print(classifier.grid.grid)
+			print("classifier lines")
+			print(classifier.lines.lines)
+			print("classifier lastPP")
+			print(classifier.lastPP.point)
+			print("match:")
+			print(classifier:match(	foveationWindow.dots,
+									foveationWindow.lines,
+									foveationWindow.lastPP))
+			table.insert(classifiers,classifier)
 		end
 	end
 		

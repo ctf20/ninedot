@@ -6,16 +6,19 @@ function PointClassifier:__init(point)
 end
 
 function PointClassifier:match(input)
+	local match
 	if self.point:storage() == nil then
-		return true
+		match = true
 	else
-		return util.matchTensor(input,self.point)
+		match = util.matchTensorWithIgnores(self.point,input)
 	end
+
+	return match
 end
 
 function PointClassifier:createCover(point,specificity)
 	local specificity = specificity or 0.5
-	if math.random() > specificity then 
+	if math.random() < specificity then 
 		self.point = point
 	else
 		self.point = torch.Tensor()

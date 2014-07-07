@@ -46,15 +46,25 @@ local function getSize(a)
   return torch.Tensor(sizeTable)
 end
 
+local function numElements(t)
+  k = 1
+  for i = 1,#t:size() do
+    k = k * t:size()[i]
+  end
+  return k
+end
+
 function util.matchTensor(a,b)
   return torch.sum(torch.eq(a,b)) == torch.prod(getSize(a),1)[1]
 end
 
 function util.matchTensorWithIgnores(template,pattern)
   local match = true
-  for i=1,#template:storage() do
-    if template:storage()[i] ~= -1 then
-      if template:storage()[i] ~= pattern:storage()[i] then
+  flatTemplate = torch.reshape(template,1,numElements(template))
+  flatPattern = torch.reshape(pattern,1,numElements(pattern))
+  for i=1,flatTemplate:size()[2] do
+    if flatTemplate[1][i] ~= -1 then
+      if flatTemplate[1][i] ~= flatPattern[1][i] then
         match = false
         break
       end
