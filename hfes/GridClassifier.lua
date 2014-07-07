@@ -18,10 +18,10 @@ function GridClassifier:match(input)
 end
 
 function GridClassifier:createCover(dots,specificity)
-	local specifity = specifity or 0.5
+	local specificity = specificity or 0.5
 	local dotsTemplate = dots:clone()
 	for i=1,#dotsTemplate:storage() do
-		if math.random() > specifity then
+		if math.random() > specificity then
 			dotsTemplate:storage()[i] = -1
 		end
 	end

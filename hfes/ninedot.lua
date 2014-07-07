@@ -37,10 +37,10 @@ function ninedot:__init(N, K, boardSize)
 	local num_dots_made = 0
 	while num_dots_made < self.n do
 		print('here making dots') 
-		local x = math.random(1, self.boardSize)
-		local y = math.random(1, self.boardSize)
-		-- local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		-- local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		-- local x = math.random(1, self.boardSize)
+		-- local y = math.random(1, self.boardSize)
+		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
 		if self.bs.dots[x][y] == 0 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1
@@ -59,7 +59,7 @@ function ninedot:__init(N, K, boardSize)
 						b}}]=self.tBoard:clone()
 	print(self.tBoard)
 	-- Create a data structure for storing an order of lines drawn 
-	self.bs.pp = {{1,1},{2,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {{2,2},{2,3},{2,4}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
 	self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
 	self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
@@ -421,48 +421,4 @@ function ninedot:extractLastPPInLargeWindow(window,lPPS)
 		lastPP = {lPPS[#lPPS][1]-window.row_min+1,lPPS[#lPPS][2]-window.col_min+1}
 	end
 	return torch.Tensor(lastPP)
-end
-
-function ninedot:createCovering(window,specifity)
-	specifity = specifity or 0.5
-	--- assume window is a torch.Tensor
-	-- covering is made of 3 components:
-	-- 		matching dots
-	-- 		vector of coordinates
-	-- 		last pen position
-	covering = {}
-
-end
-
-function ninedot:createDotsWindowCovering(dots,specifity)
-	specifity = specifity or 0.5
-	dotsTemplate = dots:clone()
-	for i=1,#dotsTemplate:storage() do
-		if math.random() > specifity then
-			dotsTemplate:storage()[i] = -1
-		end
-	end
-	return dotsTemplate
-end
-
-function ninedot:createPPCovering(pp,specifity)
-	specifity = specifity or 0.5
-	toAdd = {}
-	if pp:storage() ~= nil then
-		for i=1,pp:size()[1] do
-			if math.random() < specifity then
-				table.insert(toAdd,{pp[i][1],pp[i][2]})
-			end
-		end
-	end
-	toAdd = torch.Tensor(toAdd)
-	return ppTemplate
-end
-
-function ninedot:createLastPCovering(lastP,specifity)
-	specifity = specifity or 0.5
-	if math.random() > specifity then
-		lastP = torch.Tensor({})
-	end
-	return lastP
 end

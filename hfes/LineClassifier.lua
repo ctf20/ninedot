@@ -30,9 +30,12 @@ function LineClassifier:createCover(lines,specificity)
 	local specifity = specifity or 0.5
 	local toAdd = {}
 	if lines:storage() ~= nil then
+		print("lines:" .. lines:size()[1])
 		for i=1,lines:size()[1] do
+			print("line:")
+			print(lines[i])
 			if math.random() < specifity then
-				table.insert(toAdd,{lines[i][1],lines[i][2],lines[i][3],lines[i][4]})
+				table.insert(toAdd,{{lines[i][1][1],lines[i][1][2]},{lines[i][2][1],lines[i][2][2]}})
 			end
 		end
 	end

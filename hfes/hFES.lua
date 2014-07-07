@@ -62,7 +62,19 @@ function hFES:getValues(moves)
 	local foveationSet = self.problem:getFoveationSet()
 	print("len f_set:" .. #foveationSet)
 	for i,f in ipairs(foveationSet) do
-	print("len f:" .. #f)
+		print("i:" .. i)
+		print("len f:" .. #f.foveationWindows)
+		for j,foveationWindow in ipairs(f.foveationWindows) do
+			print(foveationWindow.dots)
+			print("lines")
+			print(foveationWindow.lines)
+			print("lastPP")
+			print(foveationWindow.lastPP)
+			local classifier = hfes.NineDotClassifier()
+			classifier:buildClassifier(foveationWindow.dots,
+									   foveationWindow.lines,
+									   foveationWindow.lastPP)
+		end
 	end
 	os.exit()	
 
