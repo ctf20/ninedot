@@ -1,5 +1,7 @@
 --util.lua
 
+util = {}
+
 function table.val_to_str ( v )
   if "string" == type( v ) then
     v = string.gsub( v, "\n", "\\n" )
@@ -34,4 +36,29 @@ function table.tostring( tbl )
     end
   end
   return "{" .. table.concat( result, "," ) .. "}"
+end
+
+local function getSize(a)
+  local sizeTable = {}
+  for i = 1,#a:size() do
+    table.insert(sizeTable,a:size()[i])
+  end
+  return torch.Tensor(sizeTable)
+end
+
+function util.matchTensor(a,b)
+  return torch.sum(torch.eq(a,b)) == torch.prod(getSize(a),1)[1]
+end
+
+function util.matchTensorWithIgnores(template,pattern)
+  local match = true
+  for i=1,#template:storage() do
+    if template:storage()[i] ~= -1 then
+      if template:storage()[i] ~= pattern:storage()[i] then
+        match = false
+        break
+      end
+    end
+  end
+  return match
 end

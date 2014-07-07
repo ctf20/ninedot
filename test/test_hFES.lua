@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 --require 'strict' 
-=======
->>>>>>> alex_matching
 require 'hfes'
 
 local n = 9
@@ -14,7 +11,3 @@ local d = hfes.hFES(nd)
 for i = 1,1 do 
 	d:makeMove()
 end
-<<<<<<< HEAD
-
-=======
->>>>>>> alex_matching

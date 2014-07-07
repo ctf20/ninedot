@@ -1,4 +1,3 @@
-require "hfes"
 local LineClassifier,parent = torch.class('hfes.LineClassifier','hfes.Classifier')
 
 function LineClassifier:__init(lines)
@@ -13,7 +12,7 @@ function LineClassifier:match(input)
 			local toMatch = self.lines[i]
 			local matched = false
 			for j=1,input:size() do
-				if hfes.utils.matchTensor(toMatch,input[j]) then
+				if utils.matchTensor(toMatch,input[j]) then
 					matched = true
 					break
 				end

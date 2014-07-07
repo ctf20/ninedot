@@ -1,4 +1,3 @@
-require "hfes"
 local GridClassifier,parent = torch.class('hfes.GridClassifier','hfes.Classifier')
 
 function GridClassifier:__init(grid)
@@ -15,7 +14,7 @@ function GridClassifier:__init(grid)
 end
 
 function GridClassifier:match(input)
-	return hfes.utils.matchTensor(input,self.grid)
+	return utils.matchTensor(input,self.grid)
 end
 
 function GridClassifier:createCover(dots,specificity)
