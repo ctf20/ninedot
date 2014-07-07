@@ -67,7 +67,6 @@ local stuffToDraw = d:getImage()
 		end
 	end
 
-
 	----------------
 	--Draw the lines 
 	----------------
@@ -91,7 +90,6 @@ local stuffToDraw = d:getImage()
 		love.graphics.setColor(0,0,255,255)
 		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[#stuffToDraw.pp][1], y + 50*stuffToDraw.pp[#stuffToDraw.pp][2] , 10, 200 )
 	end
-
 
 
  -- -- let's draw some ground
