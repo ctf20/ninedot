@@ -1,4 +1,4 @@
-local Classifier,parent = torch.class('hfes.Classifier')
+local Classifier = torch.class('hfes.Classifier')
 
 function Classifier:__init()
 	print("creating a classifier")

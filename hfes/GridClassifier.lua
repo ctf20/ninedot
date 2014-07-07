@@ -14,11 +14,11 @@ function GridClassifier:__init(grid)
 end
 
 function GridClassifier:match(input)
-	return utils.matchTensor(input,self.grid)
+	return util.matchTensor(input,self.grid)
 end
 
 function GridClassifier:createCover(dots,specificity)
-	local specifity = specifity or 0.5
+	local specificity = specificity or 0.5
 	local dotsTemplate = dots:clone()
 	for i=1,#dotsTemplate:storage() do
 		if math.random() > specifity then

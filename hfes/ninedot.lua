@@ -27,9 +27,8 @@ function ninedot:__init(N, K, boardSize)
 	if self.boardDiag % 2 == 0 then
 		self.boardDiag = self.boardDiag + 1
 	end
-	self.pseudoTBoard = torch.Tensor(3*self.boardDiag,3*self.boardDiag):fill(0)
-	self.pseudoWidth = self.boardDiag*3 / 2
 	self.largeBoardWidth = 3*self.boardDiag
+	self.pseudoTBoard = torch.Tensor(self.largeBoardWidth,self.largeBoardWidth):fill(0)
 
 	print("boardSize:" .. self.boardSize)
 	print("largeBoardWidth:" .. self.largeBoardWidth)
@@ -37,10 +36,10 @@ function ninedot:__init(N, K, boardSize)
 	local num_dots_made = 0
 	while num_dots_made < self.n do
 		print('here making dots') 
-		local x = math.random(1, self.boardSize)
-		local y = math.random(1, self.boardSize)
-		-- local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		-- local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		--local x = math.random(1, self.boardSize)
+		--local y = math.random(1, self.boardSize)
+		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
 		if self.bs.dots[x][y] == 0 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1
@@ -61,8 +60,8 @@ function ninedot:__init(N, K, boardSize)
 	-- Create a data structure for storing an order of lines drawn 
 	self.bs.pp = {{1,1},{2,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
-	self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
-	self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
+	--self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
+	--self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
 end
 
 
@@ -330,28 +329,33 @@ end
 -- end
 
 function ninedot:getFoveationSet()
+	--local windowSize = 5
+	local windowSizes = {
+						{5,5}
+						}
 	local foveationWindows = {}
-	local lPPS = self:createLargeBoardPPS(self.bs.pp)
-	for i,center in ipairs(self.bs.dotsCords) do
-		for i,size in ipairs({{5,5}}) do
+	local lPPS = self:createLargeBoardPPS(self.bs.pp)   --convert tboard pen positions to large board pen positions. 
+	for i,center in ipairs(self.bs.dotsCords) do 		--go through each real dot. 
+		for i,size in ipairs(windowSizes) do --Loop through required window sizes. 
 			local foveationWindow = {}
-			local relCenter = self:getLargeBoardCoordinates(center)
+			local relCenter = self:getLargeBoardCoordinates(center) --get dot positions relative to the pseudoTBoard not the Tboard
 			print("center:")
 			print(center)
 			print("relCenter")
 			print(relCenter)
-			local x = self.tBoard:clone()
-			x[center[1]][center[2]] = 9
+			local x = self.tBoard:clone()  -- copy the standard small tBoard 
+			x[center[1]][center[2]] = 9 
 			print(x)
 			-- local k = self.pseudoTBoard:clone()
 			-- k[relCenter[1]][relCenter[2]] = 9
 			-- print(k)
-			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
+			--Now add stuff to the foceation window 
+			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2]) --takes position of point relative to large board, the size of reqired window and returns tensor containing the dot and not-dot states in that window. 
 			print(foveationWindow.dots)
-			foveationWindow.lines = self:extractLinesInLargeWindow(foveationWindow,lPPS)
+			foveationWindow.lines = self:extractLinesInLargeWindow(foveationWindow,lPPS) -- does same with lines and large pen positons  
 			print("lines")
 			print(foveationWindow.lines)
-			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
+			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS) --same with final pen position. 
 			print("lastPP")
 			print(foveationWindow.lastPP)
 		end
@@ -386,7 +390,7 @@ function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
 	dots = self.pseudoTBoard:sub(row_min,
 							 	 row_max,
 							 	 col_min,
-							 	 col_max):clone()
+							 	 col_max):clone() --slicing of tensors. 
 	return {dots=dots,
 			row_min=row_min,
 			row_max=row_max,
