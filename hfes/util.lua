@@ -46,19 +46,65 @@ local function getSize(a)
   return torch.Tensor(sizeTable)
 end
 
+local function numElements(t)
+  k = 1
+  for i = 1,#t:size() do
+    k = k * t:size()[i]
+  end
+  return k
+end
+
 function util.matchTensor(a,b)
   return torch.sum(torch.eq(a,b)) == torch.prod(getSize(a),1)[1]
 end
 
+-- function util.matchTensorWithIgnores(template,pattern)
+--   print("template:")
+--   print(template)
+--   for i=1,#template:storage() do
+--     print(template:storage()[i])
+--   end
+--   print("pattern:")
+--   print(pattern)
+--   for i=1,#pattern:storage() do
+--     print(pattern:storage()[i])
+--   end
+
+--   local match = true
+--   for i=1,#template:storage() do
+--     -- print("utilmt; i=" .. i .. " template:" .. template:storage()[i] .. "; pattern:" .. pattern:storage()[i])
+--     if template:storage()[i] ~= -1 then
+--       if template:storage()[i] ~= pattern:storage()[i] then
+--         print(template:storage()[i])
+--         print("not equal to")
+--         print(pattern:storage()[i])
+--         match = false
+--         break
+--       end
+--     end
+--   end
+--   print("util.matchTensorWithIgnores:" .. tostring(match))
+--   return match
+-- end
+
 function util.matchTensorWithIgnores(template,pattern)
   local match = true
-  for i=1,#template:storage() do
-    if template:storage()[i] ~= -1 then
-      if template:storage()[i] ~= pattern:storage()[i] then
+  -- print("template")
+  -- print(template)
+  flatTemplate = torch.reshape(template,1,numElements(template))
+  flatPattern = torch.reshape(pattern,1,numElements(pattern))
+  for i=1,flatTemplate:size()[2] do
+    -- print("utilmt; i=" .. i .. " template:" .. template:storage()[i] .. "; pattern:" .. pattern:storage()[i])
+    if flatTemplate[1][i] ~= -1 then
+      if flatTemplate[1][i] ~= flatPattern[1][i] then
+        -- print(flatPattern[1][i])
+        -- print("not equal to")
+        -- print(flatTemplate[1][i])
         match = false
         break
       end
     end
   end
+  -- print("util.matchTensorWithIgnores:" .. tostring(match))
   return match
 end

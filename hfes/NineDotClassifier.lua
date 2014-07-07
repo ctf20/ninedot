@@ -19,8 +19,10 @@ function NineDotClassifier:match(grid,lines,lastPP)
 	local match = true
 	local params = {grid,lines,lastPP}
 	for i,classifier in ipairs({self.grid,self.lines,self.lastPP}) do
+		print("matching:" .. i)
 		local matchesClassifier = classifier:match(params[i])
 		if matchesClassifier == false then
+			print("didnt match:" .. i)
 			match = false
 			break
 		end

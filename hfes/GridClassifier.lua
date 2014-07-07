@@ -14,7 +14,7 @@ function GridClassifier:__init(grid)
 end
 
 function GridClassifier:match(input)
-	return utils.matchTensor(input,self.grid)
+	return util.matchTensorWithIgnores(self.grid,input)
 end
 
 function GridClassifier:createCover(dots,specificity)
