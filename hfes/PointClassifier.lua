@@ -1,5 +1,4 @@
-
-local PointClassifier,parent = torch.class('hfes.PointClassifier','hfes.Classifier')
+local PointClassifier,parent = torch.class('hfes.PointClassifier','hfes.ClassifierModule')
 
 function PointClassifier:__init(point)
 	parent.__init(self)

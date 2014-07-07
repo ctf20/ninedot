@@ -60,6 +60,10 @@ function hFES:getValues(moves)
 	print("moves:")
 	print(moves)
 	local foveationSet = self.problem:getFoveationSet()
+	print("len f_set:" .. #foveationSet)
+	for i,f in ipairs(foveationSet) do
+	print("len f:" .. #f)
+	end
 	os.exit()	
 
 end

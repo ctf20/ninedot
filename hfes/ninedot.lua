@@ -330,12 +330,13 @@ end
 -- end
 
 function ninedot:getFoveationSet()
-	local foveationWindows = {}
+	local foveationPositions = {}
 	local lPPS = self:createLargeBoardPPS(self.bs.pp)
 	for i,center in ipairs(self.bs.dotsCords) do
+		local relCenter = self:getLargeBoardCoordinates(center)
+		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
 		for i,size in ipairs({{5,5}}) do
 			local foveationWindow = {}
-			local relCenter = self:getLargeBoardCoordinates(center)
 			print("center:")
 			print(center)
 			print("relCenter")
@@ -354,10 +355,11 @@ function ninedot:getFoveationSet()
 			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
 			print("lastPP")
 			print(foveationWindow.lastPP)
+			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
-		table.insert(foveationWindows,foveationWindow)
+		table.insert(foveationPositions,foveationPosition)
 	end
-	return foveationWindows
+	return foveationPositions
 end
 
 function ninedot:createLargeBoardPPS(pps)

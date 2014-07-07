@@ -1,4 +1,4 @@
-local LineClassifier,parent = torch.class('hfes.LineClassifier','hfes.Classifier')
+local LineClassifier,parent = torch.class('hfes.LineClassifier','hfes.ClassifierModule')
 
 function LineClassifier:__init(lines)
 	parent.__init(self)

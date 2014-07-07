@@ -1,4 +1,4 @@
-local GridClassifier,parent = torch.class('hfes.GridClassifier','hfes.Classifier')
+local GridClassifier,parent = torch.class('hfes.GridClassifier','hfes.ClassifierModule')
 
 function GridClassifier:__init(grid)
 	parent.__init(self)
