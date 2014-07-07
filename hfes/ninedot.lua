@@ -364,7 +364,7 @@ function ninedot:getFoveationSet()
 	for i,center in ipairs(self.bs.dotsCords) do
 		local relCenter = self:getLargeBoardCoordinates(center)
 		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
-		for i,size in ipairs({{5,5}}) do
+		for j,size in ipairs({{5,5}}) do
 			local foveationWindow = {}
 			print("center:")
 			print(center)
@@ -386,8 +386,10 @@ function ninedot:getFoveationSet()
 			print(foveationWindow.lastPP)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
+		foveationPosition.dotCord = self.bs.dotsCords[i]
 		table.insert(foveationPositions,foveationPosition)
 	end
+	self.fovWindows = foveationPositions
 	return foveationPositions
 end
 
