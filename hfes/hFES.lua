@@ -4,10 +4,14 @@ local hFES = torch.class('hfes.hFES')
 
 --- the initializer
 function hFES:__init(problem)
-
 	print('hFES init')
+	print("setting problem")
 	self.problem = problem
-
+	print("setting classifiers")
+	self.classifiers = {}
+	print("self.classifiers")
+	print(self.classifiers)
+	print("#self.classifiers:" .. #self.classifiers)
 end
 
 
@@ -59,45 +63,65 @@ function hFES:getValues(moves)
 	print(moves)
 	local foveationSet = self.problem:getFoveationSet()
 	print("len f_set:" .. #foveationSet)
-	classifiers = {}
-	for i,f in ipairs(foveationSet) do
+	local classifiers = {}
+	for i,foveationPosition in ipairs(foveationSet) do
 		print("i:" .. i)
-		print("len f:" .. #f.foveationWindows)
-		for j,foveationWindow in ipairs(f.foveationWindows) do
-			print(foveationWindow.dots)
-			print("lines")
-			print(foveationWindow.lines)
-			print("lastPP")
-			print(foveationWindow.lastPP)
-			local classifier = hfes.NineDotClassifier()
-			local specificity1 = 0.1
-			classifier:buildClassifier(	foveationWindow.dots,
-										foveationWindow.lines,
-										foveationWindow.lastPP,
-										specificity1
-										)
-			print("classifier grid")
-			print(classifier.grid.grid)
-			print("classifier lines")
-			print(classifier.lines.lines)
-			print("classifier lastPP")
-			print(classifier.lastPP.point)
-			print("match:")
-			print(classifier:match(	foveationWindow.dots,
-			 						foveationWindow.lines,
-			 						foveationWindow.lastPP))
-			table.insert(classifiers,classifier)
+		print("len f:" .. #foveationPosition.foveationWindows)
+		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
+			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
+			print("#matchings:" .. #foveationWindow.matchings)
+			if #foveationWindow.matchings == 0 then
+				print(foveationWindow.dots)
+				print("lines")
+				print(foveationWindow.lines)
+				print("lastPP")
+				print(foveationWindow.lastPP)
+				local classifier = hfes.NineDotClassifier()
+				local specificity = 0.1
+				classifier:buildClassifier(	foveationWindow.dots,
+											foveationWindow.lines,
+											foveationWindow.lastPP,
+											specificity
+											)
+				print("classifier grid")
+				print(classifier.grid.grid)
+				print("classifier lines")
+				print(classifier.lines.lines)
+				print("classifier lastPP")
+				print(classifier.lastPP.point)
+				print("match:")
+				print(classifier:match(	foveationWindow.dots,
+				 						foveationWindow.lines,
+				 						foveationWindow.lastPP))
+				table.insert(self.classifiers,classifier)
+				foveationWindow.matchings={#self.classifiers}
+			end
 		end
 	end
 		
 
 end
 
+function hFES:matchClassifiers(foveationWindow)
+	print("in match classifiers")
+	print(self)
+	print("self.classifiers:")
+	print(self.classifiers)
+	local matchingSet = {}
+	for i,classifier in ipairs(self.classifiers) do
+		local matched = classifier:match(
+									foveationWindow.dots,
+			 						foveationWindow.lines,
+			 						foveationWindow.lastPP)
+		if matched then
+			table.insert(matchingSet,i)
+		end
+	end
+	return matchingSet
+end
 
 
 function hFES:getMatchSet()
-
-
 
 end
 

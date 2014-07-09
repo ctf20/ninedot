@@ -366,24 +366,24 @@ function ninedot:getFoveationSet()
 		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
 		for j,size in ipairs({{5,5}}) do
 			local foveationWindow = {}
-			print("center:")
-			print(center)
-			print("relCenter")
-			print(relCenter)
+			-- print("center:")
+			-- print(center)
+			-- print("relCenter")
+			-- print(relCenter)
 			local x = self.tBoard:clone()
 			x[center[1]][center[2]] = 9
-			print(x)
+			-- print(x)
 			-- local k = self.pseudoTBoard:clone()
 			-- k[relCenter[1]][relCenter[2]] = 9
 			-- print(k)
 			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
-			print(foveationWindow.dots)
+			-- print(foveationWindow.dots)
 			foveationWindow.lines = self:extractLinesInLargeWindow(foveationWindow,lPPS)
-			print("lines")
-			print(foveationWindow.lines)
+			-- print("lines")
+			-- print(foveationWindow.lines)
 			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
-			print("lastPP")
-			print(foveationWindow.lastPP)
+			-- print("lastPP")
+			-- print(foveationWindow.lastPP)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
 		foveationPosition.dotCord = self.bs.dotsCords[i]
@@ -410,8 +410,8 @@ function ninedot:getLargeBoardCoordinates(center)
 end
 
 function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
-	print("centerRelativeToLargeBoard")
-	print(centerRelativeToLargeBoard)
+	-- print("centerRelativeToLargeBoard")
+	-- print(centerRelativeToLargeBoard)
 	local row_min = centerRelativeToLargeBoard[1] - math.floor(rows/2)
 	local row_max = centerRelativeToLargeBoard[1] + math.floor(rows/2)
 	local col_min = centerRelativeToLargeBoard[2] - math.floor(columns/2)
@@ -428,9 +428,9 @@ function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
 end
 
 function ninedot:extractLinesInLargeWindow(window,lPPS)
-	print("ninedot:extractLinesInLargeWindow")
-	print(window)
-	print(lPPS)
+	-- print("ninedot:extractLinesInLargeWindow")
+	-- print(window)
+	-- print(lPPS)
 	local lines = {}
 	if #lPPS > 1 then
 		for j=1,#lPPS-1 do
