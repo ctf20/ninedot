@@ -59,57 +59,98 @@ end
 -- end
 
 function hFES:getValues(moves)
+	local rewards = self.problem:getScores(moves)
+	local activeClassifiers = {}
+	for i,move in ipairs(moves) do
+		-- print("adding: ***********************************")
+		-- print(self.problem.bs.pp)
+		-- print(move)
+		self.problem:makePotentialMove(move)
+		-- print(self.problem.bs.pp)
+		table.insert(activeClassifiers,self:getActiveClassifiersForMove(move))
+		self.problem:undoLastMove()
+	end
+	print("current moves:")
+	print(self.problem.bs.pp)
 	print("moves:")
 	print(moves)
+	print("rewards:")
+	print(rewards)
+	print("activeClassifiers:")
+	print(activeClassifiers)
+end
+
+function hFES:getActiveClassifiersForMove(move)
+	-- print("moves:")
+	-- print(moves)
 	local foveationSet = self.problem:getFoveationSet()
-	print("len f_set:" .. #foveationSet)
+	-- print("len f_set:" .. #foveationSet)
 	local classifiers = {}
+	local matchedSet = {}
 	for i,foveationPosition in ipairs(foveationSet) do
-		print("i:" .. i)
-		print("len f:" .. #foveationPosition.foveationWindows)
+		-- print("i:" .. i)
+		-- print("len f:" .. #foveationPosition.foveationWindows)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
-			print("#matchings:" .. #foveationWindow.matchings)
+			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 then
-				print(foveationWindow.dots)
-				print("lines")
-				print(foveationWindow.lines)
-				print("lastPP")
-				print(foveationWindow.lastPP)
-				local classifier = hfes.NineDotClassifier()
-				local specificity = 0.1
-				classifier:buildClassifier(	foveationWindow.dots,
-											foveationWindow.lines,
-											foveationWindow.lastPP,
-											specificity
-											)
-				print("classifier grid")
-				print(classifier.grid.grid)
-				print("classifier lines")
-				print(classifier.lines.lines)
-				print("classifier lastPP")
-				print(classifier.lastPP.point)
-				print("match:")
-				print(classifier:match(	foveationWindow.dots,
-				 						foveationWindow.lines,
-				 						foveationWindow.lastPP))
-				table.insert(self.classifiers,classifier)
-				foveationWindow.matchings={#self.classifiers}
+				self:createClassifier(foveationWindow,1.0)
 			end
+			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
+			-- print("#matchings end:" .. #foveationWindow.matchings)
 		end
 	end
-		
+	-- print("matched set")
+	-- print(matchedSet)
+	local activeClassifiers = util.getKeywords(matchedSet)
+	-- print("activeClassifiers:")
+	-- print(activeClassifiers)
+	return activeClassifiers
+end
 
+function hFES:addClassifiersToSet(indexes,set)
+	for i,index in ipairs(indexes) do
+		util.addToSet(index,set)
+	end
+end
+
+function hFES:createClassifier(foveationWindow,specificity)
+	print("here")
+	local specificity = specificity or 0.1
+	-- print(foveationWindow.dots)
+	-- print("lines")
+	-- print(foveationWindow.lines)
+	-- print("lastPP")
+	-- print(foveationWindow.lastPP)
+	local classifier = hfes.NineDotClassifier()
+	classifier:buildClassifier(	foveationWindow.dots,
+								foveationWindow.lines,
+								foveationWindow.lastPP,
+								specificity
+								)
+	print("classifier grid")
+	print(classifier.grid.grid)
+	print("classifier lines")
+	print(classifier.lines.lines)
+	print("classifier lastPP")
+	print(classifier.lastPP.point)
+	-- print("match:")
+	-- print(classifier:match(	foveationWindow.dots,
+	--  						foveationWindow.lines,
+	--  						foveationWindow.lastPP))
+	table.insert(self.classifiers,{classifier=classifier,weight=0.0})
+	foveationWindow.matchings={#self.classifiers}
 end
 
 function hFES:matchClassifiers(foveationWindow)
-	print("in match classifiers")
-	print(self)
-	print("self.classifiers:")
-	print(self.classifiers)
+	-- print("in match classifiers")
+	-- print(self)
+	-- print("self.classifiers:")
+	-- print(self.classifiers)
 	local matchingSet = {}
 	for i,classifier in ipairs(self.classifiers) do
-		local matched = classifier:match(
+		-- print("matching class:" .. i)
+		local matched = classifier.classifier:match(
 									foveationWindow.dots,
 			 						foveationWindow.lines,
 			 						foveationWindow.lastPP)

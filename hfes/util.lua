@@ -73,3 +73,17 @@ function util.matchTensorWithIgnores(template,pattern)
   end
   return match
 end
+
+function util.addToSet(v,set)
+  set[v] = 1
+  return set
+end
+
+function util.getKeywords(set)
+  kws = {}
+  for k,v in pairs(set) do
+    table.insert(kws,k)
+  end
+  table.sort(kws)
+  return kws
+end

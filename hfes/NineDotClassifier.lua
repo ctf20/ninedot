@@ -2,7 +2,7 @@ local NineDotClassifier,parent = torch.class('hfes.NineDotClassifier','hfes.Clas
 
 function NineDotClassifier:__init(grid,lines,lastPP)
 	parent.__init(self)
-	print("creating a classifier")
+	-- print("creating a classifier")
 	self.grid = grid or hfes.GridClassifier()
 	self.lines = lines or hfes.LineClassifier()
 	self.lastPP = lastPP or hfes.PointClassifier()

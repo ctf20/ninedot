@@ -1,7 +1,7 @@
 local ClassifierModule,parent = torch.class('hfes.ClassifierModule')
 
 function ClassifierModule:__init()
-	print("creating a classifier")
+	-- print("creating a classifier")
 end
 
 function ClassifierModule:match(input)

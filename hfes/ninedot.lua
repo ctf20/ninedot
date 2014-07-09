@@ -59,7 +59,7 @@ function ninedot:__init(N, K, boardSize)
 						b}}]=self.tBoard:clone()
 	print(self.tBoard)
 	-- Create a data structure for storing an order of lines drawn 
-	self.bs.pp = {{2,2},{2,3},{2,4}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {}--{{1,1},{2,2},{3,3}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
 	--self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
 	--self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
@@ -291,9 +291,15 @@ function ninedot:updateBoard(chosenMove)
 	print(chosenMove)
 	self.bs.dots[chosenMove[1]][chosenMove[2]] = 1 
 	table.insert(self.bs.pp, chosenMove)
-
 end
 
+function ninedot:makePotentialMove(move)
+	table.insert(self.bs.pp,move)
+end
+
+function ninedot:undoLastMove()
+	self.bs.pp[#self.bs.pp] = nil
+end
 -- function ninedot:getFoveationSet()
 -- 	local allFoveationWindows = {}
 -- 	-- the center will be determined by the foveation window

@@ -8,6 +8,6 @@ local nd = hfes.ninedot(n,k,b)
 
 local d = hfes.hFES(nd)
 
-for i = 1,1 do 
+for i = #nd.bs.pp,k-1 do 
 	d:makeMove()
 end
