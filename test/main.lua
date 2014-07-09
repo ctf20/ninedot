@@ -6,9 +6,9 @@ require 'hfes'
 function love.load()
 
 --Initialize the ninedot problem here. 
-	n = 9
-	k = 3
-	b = 5 
+	local n = 9
+	local k = 3
+	local b = 5 
 	nd = hfes.ninedot(n,k,b)
 	d = hfes.hFES(nd)
 	step = 1 
@@ -25,12 +25,13 @@ function love.update(dt)
 	-- Start 
 
 	-- Step 
-	if step <= k then 
+
+	if step <= nd.k then 
 	 	print("doing move:" .. step)
 	 	d:makeMove()
  		--d:printBoardState()
 	step = step + 1 
-	elseif step > k then 
+	elseif step > nd.k then 
 		--Need to reset the problem and do another one. 
 		d:resetBoardState()
 		step = 1 
@@ -63,8 +64,8 @@ print(#foveations)
 	local y = 100 
 	love.graphics.setColor(255,255,0,255)
 	-- Draw the board
-	for i = 1, b do 
-		for j = 1, b do 
+	for i = 1, nd.boardSize do 
+		for j = 1, nd.boardSize do 
 			if stuffToDraw.dots[i][j] == 0 then 
 				 love.graphics.circle( "fill", x + 50 * i, y + 50*j , 1, 10 )
 			else

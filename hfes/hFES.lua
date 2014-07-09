@@ -70,10 +70,11 @@ function hFES:getValues(moves)
 			print("lastPP")
 			print(foveationWindow.lastPP)
 			local classifier = hfes.NineDotClassifier()
+			local specificity1 = 0.1
 			classifier:buildClassifier(	foveationWindow.dots,
 										foveationWindow.lines,
 										foveationWindow.lastPP,
-										1.0
+										specificity1
 										)
 			print("classifier grid")
 			print(classifier.grid.grid)
@@ -83,8 +84,8 @@ function hFES:getValues(moves)
 			print(classifier.lastPP.point)
 			print("match:")
 			print(classifier:match(	foveationWindow.dots,
-									foveationWindow.lines,
-									foveationWindow.lastPP))
+			 						foveationWindow.lines,
+			 						foveationWindow.lastPP))
 			table.insert(classifiers,classifier)
 		end
 	end

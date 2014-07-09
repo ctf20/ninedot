@@ -24,7 +24,8 @@ function table.key_to_str ( k )
 end
 
 function table.tostring( tbl )
-  local result, done = {}, {}
+  local result = {}
+  local done = {}
   for k, v in ipairs( tbl ) do
     table.insert( result, table.val_to_str( v ) )
     done[ k ] = true
@@ -47,7 +48,7 @@ local function getSize(a)
 end
 
 local function numElements(t)
-  k = 1
+  local k = 1
   for i = 1,#t:size() do
     k = k * t:size()[i]
   end
@@ -60,8 +61,8 @@ end
 
 function util.matchTensorWithIgnores(template,pattern)
   local match = true
-  flatTemplate = torch.reshape(template,1,numElements(template))
-  flatPattern = torch.reshape(pattern,1,numElements(pattern))
+  local flatTemplate = torch.reshape(template,1,numElements(template))
+  local flatPattern = torch.reshape(pattern,1,numElements(pattern))
   for i=1,flatTemplate:size()[2] do
     if flatTemplate[1][i] ~= -1 then
       if flatTemplate[1][i] ~= flatPattern[1][i] then
