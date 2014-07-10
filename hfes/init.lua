@@ -8,7 +8,7 @@ torch.include('hfes','PointClassifier.lua')
 torch.include('hfes','Classifier.lua')
 torch.include('hfes','NineDotClassifier.lua')
 torch.include('hfes','hFES.lua')
-torch.include('hfes','ninedot.lua')
+torch.include('hfes','ninedotF.lua')
 torch.include('hfes','util.lua')
 
 return hfes

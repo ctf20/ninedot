@@ -1,5 +1,6 @@
 --require 'strict' 
 require 'hfes'
+math.randomseed( os.time() )
 
 local n = 9
 local k = 4
