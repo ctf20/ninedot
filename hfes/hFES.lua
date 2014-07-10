@@ -103,7 +103,7 @@ function hFES:getActiveClassifiersForMove(move)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 then
-				self:createClassifier(foveationWindow,1.0)
+				self:createClassifier(foveationWindow,0.5)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)
@@ -124,7 +124,7 @@ function hFES:addClassifiersToSet(indexes,set)
 end
 
 function hFES:createClassifier(foveationWindow,specificity)
-	print("here")
+	-- print("here")
 	local specificity = specificity or 0.1
 	-- print(foveationWindow.dots)
 	-- print("lines")
@@ -135,14 +135,15 @@ function hFES:createClassifier(foveationWindow,specificity)
 	classifier:buildClassifier(	foveationWindow.dots,
 								foveationWindow.lines,
 								foveationWindow.lastPP,
+								foveationWindow,
 								specificity
 								)
-	print("classifier grid")
-	print(classifier.grid.grid)
-	print("classifier lines")
-	print(classifier.lines.lines)
-	print("classifier lastPP")
-	print(classifier.lastPP.point)
+	-- print("classifier grid")
+	-- print(classifier.grid.grid)
+	-- print("classifier lines")
+	-- print(classifier.lines.lines)
+	-- print("classifier lastPP")
+	-- print(classifier.lastPP.point)
 	-- print("match:")
 	-- print(classifier:match(	foveationWindow.dots,
 	--  						foveationWindow.lines,
@@ -161,7 +162,7 @@ function hFES:matchClassifiers(foveationWindow)
 		-- print("matching class:" .. i)
 		local matched = classifier.classifier:match(
 									foveationWindow.dots,
-			 						foveationWindow.lines,
+			 						foveationWindow.linesMatrix,
 			 						foveationWindow.lastPP)
 		if matched then
 			table.insert(matchingSet,i)
@@ -191,7 +192,7 @@ end
 
 function hFES:getImage()
 	--Call the problem specific board state printer 
-	return {self.problem:getImage(), 
+	return self.problem:getImage()
 
 end
 

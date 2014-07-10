@@ -87,3 +87,28 @@ function util.getKeywords(set)
   table.sort(kws)
   return kws
 end
+
+function util.convertPPVecToMatrix(ppVec,rows,columns)
+  -- print("r/c:")
+  -- print(rows)
+  -- print(columns)
+  local matrix = torch.Tensor(rows*columns,rows*columns):fill(0)
+  if ppVec:storage() ~= nil then
+    for i=1,ppVec:size()[1] do
+      local line = ppVec[i]
+      local index = i + 1
+      local startX = line[1][1]
+      local startY = line[1][2]
+      local from = util.convertCoords(startX,startY,columns)
+      local endX = line[2][1]
+      local endY = line[2][2]
+      local to = util.convertCoords(endX,endY,columns)
+      matrix[from][to] = 1
+    end
+  end
+  return matrix
+end
+
+function util.convertCoords(x,y,cols)
+  return ((x-1) * cols) + y
+end
