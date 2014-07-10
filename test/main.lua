@@ -14,7 +14,7 @@ function love.load()
 
 --Initialize the ninedot problem here. 
 	local n = 9
-	local k = 5
+	local k = 4
 	local b = 5 
 	nd = hfes.ninedot(n,k,b)
 	d = hfes.hFES(nd)
@@ -112,7 +112,7 @@ end
 	
 	elseif #stuffToDraw.pp == 1 then  
 		--Draw the start pen position 
-		
+		print("drawing first point(((((((((((((((((((((")
 		love.graphics.setColor(100,100,100,255)
 		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[1][1], y + 50*stuffToDraw.pp[1][2] , 20, 200 )
 		
