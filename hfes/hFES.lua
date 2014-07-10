@@ -7,6 +7,7 @@ function hFES:__init(problem)
 
 	print('hFES init')
 	self.problem = problem
+	self.classifiers = {}
 
 end
 
@@ -19,13 +20,22 @@ function hFES:print()
 end
 
 
+function shuffled(tab)
+local n, order, res = #tab, {}, {}
+ 
+for i=1,n do order[i] = { rnd = math.random(), idx = i } end
+table.sort(order, function(a,b) return a.rnd < b.rnd end)
+for i=1,n do res[i] = tab[order[i].idx] end
+return res
+end
+
 
 --- Match and Move method 
 function hFES:makeMove()
 	
-	print("Making move")
+	print("::::=> Making move")
 
-	local move_id = self.problem:getMoves()
+	local move_id = shuffled(self.problem:getMoves())
 	local values = self:getValues(move_id)
 	-- local chosenMove = self:eGreedyChoice(move_id,values)
 	-- self.problem:updateBoard(chosenMove)
@@ -89,8 +99,8 @@ function hFES:getValues(moves)
 			table.insert(classifiers,classifier)
 		end
 	end
+	self.classifiers = classifiers 
 		
-
 end
 
 
@@ -117,7 +127,7 @@ end
 
 function hFES:getImage()
 	--Call the problem specific board state printer 
-	return self.problem:getImage()
+	return {self.problem:getImage(), 
 
 end
 

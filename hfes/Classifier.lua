@@ -1,3 +1,4 @@
+
 local Classifier = torch.class('hfes.Classifier')
 
 function Classifier:__init()
@@ -9,3 +10,4 @@ end
 
 function Classifier:match()
 end
+
