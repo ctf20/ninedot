@@ -36,8 +36,7 @@ end
 --- Match and Move method 
 function hFES:makeMove()
 	
-	print("::::=> Making move xx")
-
+	
 	local move_id = shuffled(self.problem:getMoves())
 	local values = self:getValues(move_id)
 	-- local chosenMove = self:eGreedyChoice(move_id,values)
@@ -100,7 +99,7 @@ function hFES:getActiveClassifiersForMove(move)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 then
-				self:createClassifier(foveationWindow,0.5)
+				self:createClassifier(foveationWindow,0.8)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)

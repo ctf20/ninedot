@@ -54,19 +54,17 @@ end
 
 function love.draw()
 delay_s(0)
-
+ 
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
 stuffToDrawBigX = stuffToDrawBig[1] 
 local classifiers = stuffToDrawBig[2] --Contains ALL the classifiers so far!!!
-print("XXXSENDING CLASSIFIERS " .. #classifiers)
-print(classifiers[1].classifier)
 
 local stuffToDraw = stuffToDrawBigX[1]
 local foveationsBig = stuffToDrawBigX[2] 
 
-print("checking foveation data structure")
-print(#foveationsBig) -- Prints 9 foveations 
+--print("checking foveation data structure")
+--print(#foveationsBig) -- Prints 9 foveations 
 
 if #foveationsBig > 0 then
 	foveations = foveationsBig[9].foveationWindows
@@ -112,7 +110,7 @@ end
 	
 	elseif #stuffToDraw.pp == 1 then  
 		--Draw the start pen position 
-		print("drawing first point(((((((((((((((((((((")
+		--print("drawing first point(((((((((((((((((((((")
 		love.graphics.setColor(100,100,100,255)
 		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[1][1], y + 50*stuffToDraw.pp[1][2] , 20, 200 )
 		
@@ -168,7 +166,7 @@ if #foveationsBig > 0 then
 		local fx = foveationsBig[f].center[1]
 		local fy = foveationsBig[f].center[2]
 
-		print ("fx = " .. fx .. " fy = ".. fy)
+		--print ("fx = " .. fx .. " fy = ".. fy)
 		for i = 1, nd.boardSize do 
 			for j = 1, nd.boardSize do 
 				if foveationsBig[f].foveationWindows[1].dots[i][j] == 0 then 
@@ -189,8 +187,11 @@ end
 x = 500 
 y = -20
 
-print("drawing classifiers")
-print("number of classifiers in total = " .. #classifiers)
+--print("drawing classifiers")
+
+--print("number of classifiers in total = " .. #classifiers)
+love.graphics.setColor(0,255,255,255)
+love.graphics.print("No Classifiers: " .. #classifiers, 500, 10)
 if #foveationsBig > 0 then
 	for f = 1, #foveationsBig do --Go through each foveation position 
 
@@ -200,14 +201,14 @@ if #foveationsBig > 0 then
 		local fy = foveationsBig[f].center[2]
 
 		-- Go through each matching classifier for this foveationWindow. 
-		print("number of classifiers matching in foveationPosition " .. f .. " = " .. #foveationsBig[f].foveationWindows[1].matchings)
+		--print("number of classifiers matching in foveationPosition " .. f .. " = " .. #foveationsBig[f].foveationWindows[1].matchings)
 		for q = 1, #foveationsBig[f].foveationWindows[1].matchings do 
 			love.graphics.setColor(0,255,255,255)
 
-			print("classifier " .. q .. " = " .. foveationsBig[f].foveationWindows[1].matchings[q])
+			--print("classifier " .. q .. " = " .. foveationsBig[f].foveationWindows[1].matchings[q])
 
 			local classif = classifiers[foveationsBig[f].foveationWindows[1].matchings[q]]
-			print(classif.classifier.grid)
+			--print(classif.classifier.grid)
 			
 			--Draw this classifier's dot matchings 
 			for i = 1, nd.boardSize do 
@@ -226,13 +227,13 @@ if #foveationsBig > 0 then
 
 			--Draw the classifier's line positions 
 			if classif.classifier.lines.lines:storage() ~= nil then 
-				print("NUM LINES88")
+				--print("NUM LINES88")
 				local num_lines = classif.classifier.lines.lines:size()[1]
 
 				love.graphics.setLineWidth( 2 )
 				love.graphics.setColor(255,100,50,255)
 				if num_lines > 0 then 
-					print("DRAWING CLASSIFIER LINE ************** > 1")
+					--print("DRAWING CLASSIFIER LINE ************** > 1")
 
 					for i = 1, num_lines-1 do 
 						local startX = classif.classifier.lines.lines[i][1][1]
