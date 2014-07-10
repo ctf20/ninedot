@@ -36,7 +36,7 @@ end
 --- Match and Move method 
 function hFES:makeMove()
 	
-	print("::::=> Making move")
+	print("::::=> Making move xx")
 
 	local move_id = shuffled(self.problem:getMoves())
 	local values = self:getValues(move_id)

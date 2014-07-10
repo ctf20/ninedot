@@ -1,7 +1,7 @@
 local ninedot = torch.class('hfes.ninedot')
 
 function ninedot:__init(N, K, boardSize)
-	print("creating an {n,k,c}-problem")
+	print("creating an {n,k,c}-problem xxxx")
 
 	-- Create an (n,k,c) dot problem 
 	self.n = N or 1 --Default = A single dot 
