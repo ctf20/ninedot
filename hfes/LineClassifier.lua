@@ -7,17 +7,20 @@ end
 
 function LineClassifier:match(input)
 	local allMatched = true
+	-- print("line:")
+	-- print(input)
 	if self.lines:storage() ~= nil then
 
 		for i=1,self.lines:size()[1] do
 			-- print("i = " .. i)
 			local toMatch = self.lines[i]
 			local matched = false
-			for j=1,input:size()[1] do
-
-				if util.matchTensor(toMatch,input[j]) then
-					matched = true
-					break
+			if input:storage() ~= nil then
+				for j=1,input:size()[1] do
+					if util.matchTensor(toMatch,input[j]) then
+						matched = true
+						break
+					end
 				end
 			end
 			if matched == false then

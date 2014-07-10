@@ -59,7 +59,7 @@ function ninedot:__init(N, K, boardSize)
 						b}}]=self.tBoard:clone()
 	print(self.tBoard)
 	-- Create a data structure for storing an order of lines drawn 
-	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {}--{{1,1},{2,2},{3,3}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
 	--self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
 	--self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
@@ -285,9 +285,15 @@ function ninedot:updateBoard(chosenMove)
 	print(chosenMove)
 	self.bs.dots[chosenMove[1]][chosenMove[2]] = 1 
 	table.insert(self.bs.pp, chosenMove)
-
 end
 
+function ninedot:makePotentialMove(move)
+	table.insert(self.bs.pp,move)
+end
+
+function ninedot:undoLastMove()
+	self.bs.pp[#self.bs.pp] = nil
+end
 -- function ninedot:getFoveationSet()
 -- 	local allFoveationWindows = {}
 -- 	-- the center will be determined by the foveation window
@@ -360,24 +366,24 @@ function ninedot:getFoveationSet()
 		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
 		for j,size in ipairs({{5,5}}) do
 			local foveationWindow = {}
-			print("center:")
-			print(center)
-			print("relCenter")
-			print(relCenter)
+			-- print("center:")
+			-- print(center)
+			-- print("relCenter")
+			-- print(relCenter)
 			local x = self.tBoard:clone()
 			x[center[1]][center[2]] = 9
-			print(x)
+			-- print(x)
 			-- local k = self.pseudoTBoard:clone()
 			-- k[relCenter[1]][relCenter[2]] = 9
 			-- print(k)
 			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
-			print(foveationWindow.dots)
+			-- print(foveationWindow.dots)
 			foveationWindow.lines = self:extractLinesInLargeWindow(foveationWindow,lPPS)
-			print("lines")
-			print(foveationWindow.lines)
+			-- print("lines")
+			-- print(foveationWindow.lines)
 			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
-			print("lastPP")
-			print(foveationWindow.lastPP)
+			-- print("lastPP")
+			-- print(foveationWindow.lastPP)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
 		foveationPosition.dotCord = self.bs.dotsCords[i]
@@ -404,8 +410,8 @@ function ninedot:getLargeBoardCoordinates(center)
 end
 
 function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
-	print("centerRelativeToLargeBoard")
-	print(centerRelativeToLargeBoard)
+	-- print("centerRelativeToLargeBoard")
+	-- print(centerRelativeToLargeBoard)
 	local row_min = centerRelativeToLargeBoard[1] - math.floor(rows/2)
 	local row_max = centerRelativeToLargeBoard[1] + math.floor(rows/2)
 	local col_min = centerRelativeToLargeBoard[2] - math.floor(columns/2)
@@ -422,9 +428,9 @@ function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
 end
 
 function ninedot:extractLinesInLargeWindow(window,lPPS)
-	print("ninedot:extractLinesInLargeWindow")
-	print(window)
-	print(lPPS)
+	-- print("ninedot:extractLinesInLargeWindow")
+	-- print(window)
+	-- print(lPPS)
 	local lines = {}
 	if #lPPS > 1 then
 		for j=1,#lPPS-1 do
