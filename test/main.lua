@@ -53,12 +53,17 @@ end
 
 
 function love.draw()
-delay_s(1)
+delay_s(0)
 
 --Get the data to draw from the problem specificiation 
-local stuffToDrawBig = d:getImage()
-local stuffToDraw = stuffToDrawBig[1]
-local foveationsBig = stuffToDrawBig[2]
+local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
+stuffToDrawBigX = stuffToDrawBig[1] 
+local classifiers = stuffToDrawBig[2] --Contains ALL the classifiers so far!!!
+print("XXXSENDING CLASSIFIERS " .. #classifiers)
+print(classifiers[1].classifier)
+
+local stuffToDraw = stuffToDrawBigX[1]
+local foveationsBig = stuffToDrawBigX[2] 
 
 print("checking foveation data structure")
 print(#foveationsBig) -- Prints 9 foveations 
@@ -75,9 +80,10 @@ end
 --os.exit()
 --print(stuffToDraw)
 
-	----------------
+	--------------------------------------------------------------------------------
 	--Draw the empty board + dots in the problem 
-	----------------
+	--------------------------------------------------------------------------------
+
 	local x = 100 
 	local y = 100 
 	love.graphics.setColor(255,255,0,255)
@@ -92,9 +98,10 @@ end
 		end
 	end
 
-	----------------
+	--------------------------------------------------------------------------------
 	--Draw the lines 
-	----------------
+	--------------------------------------------------------------------------------
+
 	love.graphics.setLineWidth( 10 )
 	if #stuffToDraw.pp > 1 then 
 		for i = 1, #stuffToDraw.pp-1 do 
@@ -111,14 +118,15 @@ end
 		
 	end
 	--Draw final pen position 
-	if #stuffToDraw.pp > 1 then 
+	if #stuffToDraw.pp > 0 then 
 		love.graphics.setColor(0,0,255,255)
 		love.graphics.circle( "fill", x + 50 * stuffToDraw.pp[#stuffToDraw.pp][1], y + 50*stuffToDraw.pp[#stuffToDraw.pp][2] , 10, 200 )
 	end
 
-	---------------------------
+	-----------------------------------------------------------------------------
 	--Draw the foveation windows. 
-	---------------------------
+	-----------------------------------------------------------------------------
+
 	-- if #foveationsBig > 0 then 
 
 	-- 	print("foveations")
@@ -144,9 +152,10 @@ end
 	-- 	end
 	-- end
 
-------------------------------------------------------------
+-----------------------------------------------------------------------------
 -- Print all the foveation windows on the right of the screen. 
-------------------------------------------------------------
+-----------------------------------------------------------------------------
+
 x = 450 
 y = -20
 if #foveationsBig > 0 then
@@ -173,10 +182,95 @@ if #foveationsBig > 0 then
 
 
 end
-------------------------------------------------------------
--- Print all the classifiers for each foveation position. 
-------------------------------------------------------------
 
+----------------------------------------------------------------------------
+-- Print all the classifiers for each foveation position. 
+----------------------------------------------------------------------------
+x = 500 
+y = -20
+
+print("drawing classifiers")
+print("number of classifiers in total = " .. #classifiers)
+if #foveationsBig > 0 then
+	for f = 1, #foveationsBig do --Go through each foveation position 
+
+		love.graphics.setColor(0,255,255,255)
+		-- Draw the board
+		local fx = foveationsBig[f].center[1]
+		local fy = foveationsBig[f].center[2]
+
+		-- Go through each matching classifier for this foveationWindow. 
+		print("number of classifiers matching in foveationPosition " .. f .. " = " .. #foveationsBig[f].foveationWindows[1].matchings)
+		for q = 1, #foveationsBig[f].foveationWindows[1].matchings do 
+			love.graphics.setColor(0,255,255,255)
+
+			print("classifier " .. q .. " = " .. foveationsBig[f].foveationWindows[1].matchings[q])
+
+			local classif = classifiers[foveationsBig[f].foveationWindows[1].matchings[q]]
+			print(classif.classifier.grid)
+			
+			--Draw this classifier's dot matchings 
+			for i = 1, nd.boardSize do 
+				for j = 1, nd.boardSize do 
+					if classif.classifier.grid.grid[i][j] == 0 then 
+						 love.graphics.circle( "fill", x  + q* 50  + 7 * (i + fx-math.ceil(5/2)) , y + f*60 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
+					elseif classif.classifier.grid.grid[i][j] == 1 then 
+						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*60 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
+					else
+ 						 love.graphics.setColor(0,100,100,100)
+						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*60 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
+	 					 love.graphics.setColor(0,255,255,255)
+					end
+				end
+			end
+
+			--Draw the classifier's line positions 
+			if classif.classifier.lines.lines:storage() ~= nil then 
+				print("NUM LINES88")
+				local num_lines = classif.classifier.lines.lines:size()[1]
+
+				love.graphics.setLineWidth( 2 )
+				love.graphics.setColor(255,100,50,255)
+				if num_lines > 0 then 
+					print("DRAWING CLASSIFIER LINE ************** > 1")
+
+					for i = 1, num_lines-1 do 
+						local startX = classif.classifier.lines.lines[i][1][1]
+						local startY = classif.classifier.lines.lines[i][1][2]
+						local endX = classif.classifier.lines.lines[i][2][1]
+						local endY = classif.classifier.lines.lines[i][2][2]
+						love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
+
+					end	
+				
+				-- elseif num_lines == 1 then  
+				-- 		startX = classif.classifier.lines.lines[1][1][1]
+				-- 		startY = classif.classifier.lines.lines[1][1][2]
+
+				-- 	--Draw the start pen position 
+				-- 	print("DRAWING CLASSIFIER LINE **************  1")
+				-- 	love.graphics.setColor(255,0,50,255)
+				-- 	love.graphics.circle( "fill", x + q* 50 + 7 * (startX + fx-math.ceil(5/2)),y + f* 60 + 7 * (startY + fy-math.ceil(5/2)), 2, 200 )
+					
+				end
+
+			end
+			
+			--Draw the classifier's POINT positions 
+			if classif.classifier.lastPP.point:storage() ~= nil then 
+
+				local startX = classif.classifier.lastPP.point[1]
+				local startY = classif.classifier.lastPP.point[2]
+				love.graphics.setColor(0,0,255,255)
+				love.graphics.circle( "fill", x + q* 50 + 7*(startX+ fx-math.ceil(5/2)),  y + f * 60 + 7*(startY + fy-math.ceil(5/2)), 3, 200 )
+			
+			end
+
+		end
+
+	end
+
+end
 
 
  -- -- let's draw some ground

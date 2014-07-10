@@ -79,14 +79,11 @@ function hFES:getValues(moves)
 		table.insert(activeClassifiers,self:getActiveClassifiersForMove(move))
 		self.problem:undoLastMove()
 	end
-	print("current moves:")
-	print(self.problem.bs.pp)
-	print("moves:")
-	print(moves)
-	print("rewards:")
-	print(rewards)
-	print("activeClassifiers:")
-	print(activeClassifiers)
+end
+
+function hFES:getCurrentActiveClassifiers(moves)
+	local activeClassifiers = self:getActiveClassifiersForMove()
+	return activeClassifiers
 end
 
 function hFES:getActiveClassifiersForMove(move)
@@ -103,7 +100,7 @@ function hFES:getActiveClassifiersForMove(move)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 then
-				self:createClassifier(foveationWindow,1.0)
+				self:createClassifier(foveationWindow,0.5)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)
@@ -124,7 +121,7 @@ function hFES:addClassifiersToSet(indexes,set)
 end
 
 function hFES:createClassifier(foveationWindow,specificity)
-	print("here")
+	--print("here")
 	local specificity = specificity or 0.1
 	-- print(foveationWindow.dots)
 	-- print("lines")
@@ -137,12 +134,12 @@ function hFES:createClassifier(foveationWindow,specificity)
 								foveationWindow.lastPP,
 								specificity
 								)
-	print("classifier grid")
-	print(classifier.grid.grid)
-	print("classifier lines")
-	print(classifier.lines.lines)
-	print("classifier lastPP")
-	print(classifier.lastPP.point)
+	-- print("classifier grid")
+	-- print(classifier.grid.grid)
+	-- print("classifier lines")
+	-- print(classifier.lines.lines)
+	-- print("classifier lastPP")
+	-- print(classifier.lastPP.point)
 	-- print("match:")
 	-- print(classifier:match(	foveationWindow.dots,
 	--  						foveationWindow.lines,
@@ -191,9 +188,12 @@ end
 
 function hFES:getImage()
 	--Call the problem specific board state printer 
-	return {self.problem:getImage(), 
+	--return {self.problem:getImage(), self.classifiers}
+	self:getCurrentActiveClassifiers() --Rematch classifiers to current board position. 
+	--print("SENDING CLASSIFIERS " .. #self.classifiers)
+	return { self.problem:getImage(),self.classifiers }
 
-end
+end	
 
 
 
