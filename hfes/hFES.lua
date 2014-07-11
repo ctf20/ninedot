@@ -182,7 +182,7 @@ function hFES:getActiveClassifiersForMove(move, visualize)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
-				self:createClassifier(foveationWindow,0.5)
+				self:createClassifier(foveationWindow,1.0)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)

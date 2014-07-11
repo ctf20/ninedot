@@ -15,9 +15,9 @@ end
 function love.load()
 
 --Initialize the ninedot problem here. 
-	local n = 1
-	local k = 1
-	local b = 5 
+	local n = 2
+	local k = 2
+	local b = 3 
 	--First start 
 	nd = hfes.ninedot(n,k,b)
 	d = hfes.hFES(nd)
@@ -184,8 +184,8 @@ if #foveationsBig > 0 then
 		local fy = foveationsBig[f].center[2]
 
 		--print ("fx = " .. fx .. " fy = ".. fy)
-		for i = 1, nd.boardSize do 
-			for j = 1, nd.boardSize do 
+		for i = 1, 5 do 
+			for j = 1, 5 do 
 				if foveationsBig[f].foveationWindows[1].dots[i][j] == 0 then 
 					 love.graphics.circle( "fill", x  + 7 * (i + fx-math.ceil(5/2)) , y + f*60 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
 				else
@@ -234,8 +234,8 @@ if #foveationsBig > 0 then
 			love.graphics.print(string.format("%.4f", classif.weight), x  + q* 50 , y + f*60 + 40)
 			table.insert(histSc, classif.weight)
 			--Draw this classifier's dot matchings 
-			for i = 1, nd.boardSize do 
-				for j = 1, nd.boardSize do 
+			for i = 1, 5 do 
+				for j = 1, 5 do 
 					if classif.classifier.grid.grid[i][j] == 0 then 
 						 love.graphics.circle( "fill", x  + q* 50  + 7 * (i + fx-math.ceil(5/2)) , y + f*60 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
 					elseif classif.classifier.grid.grid[i][j] == 1 then 
