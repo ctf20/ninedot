@@ -72,7 +72,7 @@ function hFES:makeMoveTD()
 	self.problem:updateBoard(move_id[chosenMove])
 
 	local bla2, postScore = self.problem:getScoreCurrentPosition()
-	--print("instant reward = " .. preScore .. " " .. postScore)
+	print("instant reward = " .. preScore .. " " .. postScore)
 	self:updateRollout(activeClassifiers[chosenMove], postScore-preScore)
 
 end
@@ -98,7 +98,7 @@ function hFES:updateValues()
 			end
 			self.classifiers[self.rollouts[i].activeClassifiers[j]].weight = 
 				self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + 
-				alpha * (self.rollouts[i].reward + 0.95*val - values[i])
+				alpha * (self.rollouts[i].reward + 0.5*val - values[i])
 		end
 	end
 
@@ -145,6 +145,10 @@ function hFES:getValues(moves)
 		self.problem:undoLastMove()
 	end
 
+	for i = 1, #values do 
+		print(values[i])
+	end
+
 	return values, activeClassifiers
 end
 
@@ -152,7 +156,7 @@ function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
 
 	local val = 0 
 	for i = 1, #matchedClassifiers do 
-		val = val + self.classifiers[i].weight
+		val = val + self.classifiers[matchedClassifiers[i]].weight
 	end
 	--print("Value for this move = " .. val)
 	return val 
