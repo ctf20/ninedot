@@ -22,7 +22,7 @@ function love.load()
 	nd = hfes.ninedot(n,k,b)
 	d = hfes.hFES(nd)
 	step = 1 
-
+	local blabla = 0
 	 -- hero = {} -- new table for the hero
 	 -- hero.x = 300    -- x,y coordinates of the hero
 	 -- hero.y = 450
