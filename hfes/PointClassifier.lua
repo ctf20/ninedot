@@ -7,8 +7,12 @@ end
 
 function PointClassifier:match(input)
 	local match
+	-- print(self.point)
+	-- print(input)
 	if self.point:storage() == nil then
 		match = true
+	elseif input:storage() == nil then
+		match = false
 	else
 		match = util.matchTensorWithIgnores(self.point,input)
 	end

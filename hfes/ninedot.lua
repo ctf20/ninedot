@@ -366,7 +366,6 @@ function ninedot:getFoveationSet()
 		local relCenter = self:getLargeBoardCoordinates(center)
 		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
 		for j,size in ipairs({{5,5}}) do
-			local foveationWindow = {}
 			-- print("center:")
 			-- print(center)
 			-- print("relCenter")
@@ -379,7 +378,7 @@ function ninedot:getFoveationSet()
 			-- print(k)
 			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
 			-- print(foveationWindow.dots)
-			foveationWindow.lines = self:extractLinesInLargeWindow(foveationWindow,lPPS)
+			foveationWindow.lines,foveationWindow.linesMatrix = self:extractLinesInLargeWindow(foveationWindow,lPPS,size[1],size[2])
 			-- print("lines")
 			-- print(foveationWindow.lines)
 			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
@@ -417,7 +416,7 @@ function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
 	local row_max = centerRelativeToLargeBoard[1] + math.floor(rows/2)
 	local col_min = centerRelativeToLargeBoard[2] - math.floor(columns/2)
 	local col_max = centerRelativeToLargeBoard[2] + math.floor(columns/2)
-	dots = self.pseudoTBoard:sub(row_min,
+	local dots = self.pseudoTBoard:sub(row_min,
 							 	 row_max,
 							 	 col_min,
 							 	 col_max):clone()
@@ -425,10 +424,12 @@ function ninedot:extractLargeWindow(centerRelativeToLargeBoard,rows,columns)
 			row_min=row_min,
 			row_max=row_max,
 			col_min=col_min,
-			col_max=col_max}
+			col_max=col_max,
+			rows=rows,
+			cols=columns}
 end
 
-function ninedot:extractLinesInLargeWindow(window,lPPS)
+function ninedot:extractLinesInLargeWindow(window,lPPS,rows,columns)
 	-- print("ninedot:extractLinesInLargeWindow")
 	-- print(window)
 	-- print(lPPS)
@@ -444,7 +445,9 @@ function ninedot:extractLinesInLargeWindow(window,lPPS)
 			end
 		end
 	end
-	return torch.Tensor(lines)
+	lines = torch.Tensor(lines)
+	local linesMatrix = util.convertPPVecToMatrix(lines,rows,columns)
+	return lines,linesMatrix
 end
 
 function ninedot:extractLastPPInLargeWindow(window,lPPS)

@@ -1,7 +1,6 @@
 --require 'strict' 
 require 'hfes'
-math.randomseed( os.time() )
-
+math.randomseed(os.time())
 local n = 9
 local k = 4
 local b = 5 
@@ -14,5 +13,11 @@ for j = 1, #nd.bs.pp do
 end
 for i = #nd.bs.pp,k-1 do 
 	--print("IN MAKE MOVE")
+	d:makeMove()
+end
+
+nd.bs.pp = {}
+
+for i = #nd.bs.pp,k-1 do 
 	d:makeMove()
 end

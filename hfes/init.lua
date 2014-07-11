@@ -4,6 +4,7 @@ hfes = {}
 torch.include('hfes','ClassifierModule.lua')
 torch.include('hfes','GridClassifier.lua')
 torch.include('hfes','LineClassifier.lua')
+torch.include('hfes','LineClassifierTwo.lua')
 torch.include('hfes','PointClassifier.lua')
 torch.include('hfes','Classifier.lua')
 torch.include('hfes','NineDotClassifier.lua')

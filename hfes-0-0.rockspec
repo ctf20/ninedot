@@ -25,6 +25,7 @@ build = {
 		['hfes.ClassifierModule'] = 'hfes/ClassifierModule.lua',
 		['hfes.GridClassifier'] = 'hfes/GridClassifier.lua',
 		['hfes.LineClassifier'] = 'hfes/LineClassifier.lua',
+		['hfes.LineClassifierTwo'] = 'hfes/LineClassifierTwo.lua',
 		['hfes.PointClassifier'] = 'hfes/PointClassifier.lua',
     }
 }
