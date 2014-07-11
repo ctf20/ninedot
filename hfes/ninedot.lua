@@ -452,7 +452,9 @@ end
 
 function ninedot:extractLastPPInLargeWindow(window,lPPS)
 	local lastPP = {}
-	if #lPPS > 1 then
+	if #lPPS >= 1 and 
+	(lPPS[#lPPS][1] >= window.row_min and lPPS[#lPPS][1] <= window.row_max) and
+    (lPPS[#lPPS][2] >= window.col_min and lPPS[#lPPS][2] <= window.col_max) then
 		lastPP = {lPPS[#lPPS][1]-window.row_min+1,lPPS[#lPPS][2]-window.col_min+1}
 	end
 	return torch.Tensor(lastPP)
