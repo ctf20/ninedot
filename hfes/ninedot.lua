@@ -53,6 +53,7 @@ function ninedot:__init(N, K, boardSize)
 	local b = a + self.boardSize - 1
 	print("a:" .. a)
 	print("b:" .. b)
+	
 	self.pseudoTBoard[{{a,
 						b},
 						{a,
