@@ -163,7 +163,7 @@ function ninedot:getScores(moves)
 	-- local scores = {}	
 	local scores = {}
 	local dots_covered, no_dots = self:getScoreCurrentPosition()
-	-- print(dots_covered)
+	
 	-- print(no_dots)
 	local last_move = self.bs.pp[#self.bs.pp]
 	for i,move in ipairs(moves) do
@@ -200,7 +200,7 @@ function ninedot:getScoreCurrentPosition()
 		end
 	end
 	-- self:printDotsCovered(dots_covered)
-	return dots_covered,self:countDotsCovered(dots_covered)
+	return dots_covered , self:countDotsCovered(dots_covered)
 end
 
 function ninedot:printDotsCovered(dots_covered)

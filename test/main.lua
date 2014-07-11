@@ -53,7 +53,7 @@ end
 
 
 function love.draw()
-delay_s(0)
+--delay_s(0)
  
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
@@ -150,6 +150,11 @@ end
 	-- 	end
 	-- end
 
+
+--Analysis parts of the visualization 
+   if love.keyboard.isDown("up") then
+      print("Key pressed")
+   end
 -----------------------------------------------------------------------------
 -- Print all the foveation windows on the right of the screen. 
 -----------------------------------------------------------------------------
@@ -181,6 +186,8 @@ if #foveationsBig > 0 then
 
 end
 
+
+
 ----------------------------------------------------------------------------
 -- Print all the classifiers for each foveation position. 
 ----------------------------------------------------------------------------
@@ -192,6 +199,9 @@ y = -20
 --print("number of classifiers in total = " .. #classifiers)
 love.graphics.setColor(0,255,255,255)
 love.graphics.print("No Classifiers: " .. #classifiers, 500, 10)
+
+
+
 if #foveationsBig > 0 then
 	for f = 1, #foveationsBig do --Go through each foveation position 
 

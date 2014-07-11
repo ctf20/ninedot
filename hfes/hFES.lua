@@ -67,7 +67,7 @@ end
 -- end
 
 function hFES:getValues(moves)
-	local rewards = self.problem:getScores(moves)
+	--local rewards = self.problem:getScores(moves) --This calculates the cumulative reward obtained so far including the move. 
 	local activeClassifiers = {}
 	for i,move in ipairs(moves) do
 		-- print("adding: ***********************************")
@@ -99,7 +99,7 @@ function hFES:getActiveClassifiersForMove(move)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 then
-				self:createClassifier(foveationWindow,0.8)
+				self:createClassifier(foveationWindow,1.0)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)
