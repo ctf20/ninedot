@@ -100,6 +100,7 @@ function ninedot:resetBoardState()
 	-- Create k random dots 
 	local num_dots_made = 0
 	while num_dots_made < self.n do
+		print('here making dots') 
 		--local x = math.random(1, self.boardSize)
 		--local y = math.random(1, self.boardSize)
 		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
@@ -109,6 +110,7 @@ function ninedot:resetBoardState()
 			self.tBoard[x][y] = 1
 			table.insert(self.bs.dotsCords,{x,y})
 			num_dots_made = num_dots_made + 1
+			print("dot in " .. x .. "," .. y)
 		end 
 	end
 	local a = math.floor((self.largeBoardWidth/2)-(self.boardSize/2)+1)
@@ -196,16 +198,23 @@ function ninedot:getScoreCurrentPosition()
 		dots_covered = self:getDotsCovered(self.bs.pp[1],nil,dots_covered)
 	else
 		for i=1,#self.bs.pp-1 do
-			-- print("moving")
+			print("moving")
 			dots_covered = self:getDotsCovered(self.bs.pp[i],self.bs.pp[i+1],dots_covered)
 		end
 	end
-	-- self:printDotsCovered(dots_covered)
+
+	--self:printDotsCovered(dots_covered)
 	return dots_covered , self:countDotsCovered(dots_covered)
 end
 
 function ninedot:printDotsCovered(dots_covered)
-	print(dots_covered)
+	for i = 1, #dots_covered do 
+		print(" ")
+		for j = 1, #dots_covered[i] do 
+			print(dots_covered[i][j] .. " ")
+		end
+	end
+	
 end
 
 function ninedot:countDotsCovered(dots_covered)
@@ -221,11 +230,25 @@ function ninedot:countDotsCovered(dots_covered)
 end
 function ninedot:getDotsCovered(first,second,dots_covered)
 	-- print("in getDotsCovered")
+
+
 	if second == nil then
-		-- print("testing: {" .. first[1] .. "," .. first[2] .. "}")
+		-- for i = 1, #self.bs.dots do 
+		-- 		print("")
+		-- 	for j = 1, #self.bs.dots[i] do 
+		-- 		io.write(self.bs.dots[i][j])
+		-- 		if self.bs.dots[i][j] == 1 then 
+					
+		-- 			--print("dot is actually at : {" .. i .. "," .. j.. "}")
+		-- 		end
+		-- 	end
+		-- end
+		--print("testing: {" .. first[1] .. "," .. first[2] .. "}")
 		if self.bs.dots[first[1]][first[2]] == 1 then
 			dots_covered[first[1]][first[2]] = 1
-			-- print("we did it")
+			--print("we did it")
+		else
+			dots_covered[first[1]][first[2]] = 0
 		end
 		return dots_covered
 	else
@@ -284,7 +307,6 @@ end
 function ninedot:updateBoard(chosenMove)
 	--print("best move:")
 	--print(chosenMove)
-	self.bs.dots[chosenMove[1]][chosenMove[2]] = 1 
 	table.insert(self.bs.pp, chosenMove)
 end
 

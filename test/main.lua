@@ -4,6 +4,8 @@ require 'strict'
 require 'hfes'
 --math.randomseed( os.time() )
 
+local historyScore = {}
+
 function delay_s(delay)
   delay = delay or 1
   local time_to = os.time() + delay
@@ -62,7 +64,7 @@ end
 
 
 function love.draw()
-delay_s(1)
+--delay_s(1)
  
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
@@ -86,6 +88,7 @@ end
 
 --os.exit()
 --print(stuffToDraw)
+
 
 	--------------------------------------------------------------------------------
 	--Draw the empty board + dots in the problem 
@@ -209,9 +212,8 @@ y = -20
 love.graphics.setColor(0,255,255,255)
 love.graphics.print("No Classifiers: " .. #classifiers, 500, 10)
 
-
-
 if #foveationsBig > 0 then
+	local histSc = {}
 	for f = 1, #foveationsBig do --Go through each foveation position 
 
 		love.graphics.setColor(0,255,255,255)
@@ -222,13 +224,15 @@ if #foveationsBig > 0 then
 		-- Go through each matching classifier for this foveationWindow. 
 		--print("number of classifiers matching in foveationPosition " .. f .. " = " .. #foveationsBig[f].foveationWindows[1].matchings)
 		for q = 1, #foveationsBig[f].foveationWindows[1].matchings do 
+
 			love.graphics.setColor(0,255,255,255)
 
 			--print("classifier " .. q .. " = " .. foveationsBig[f].foveationWindows[1].matchings[q])
 
 			local classif = classifiers[foveationsBig[f].foveationWindows[1].matchings[q]]
 			--print(classif.classifier.grid)
-			
+			love.graphics.print(string.format("%.4f", classif.weight), x  + q* 50 , y + f*60 + 40)
+			table.insert(histSc, classif.weight)
 			--Draw this classifier's dot matchings 
 			for i = 1, nd.boardSize do 
 				for j = 1, nd.boardSize do 
@@ -243,6 +247,7 @@ if #foveationsBig > 0 then
 					end
 				end
 			end
+
 
 			--Draw the classifier's line positions 
 			if classif.classifier.lines.lines:storage() ~= nil then 
@@ -275,6 +280,7 @@ if #foveationsBig > 0 then
 				end
 
 			end
+
 			
 			--Draw the classifier's POINT positions 
 			if classif.classifier.lastPP.point:storage() ~= nil then 
@@ -285,13 +291,23 @@ if #foveationsBig > 0 then
 				love.graphics.circle( "fill", x + q* 50 + 7*(startX+ fx-math.ceil(5/2)),  y + f * 60 + 7*(startY + fy-math.ceil(5/2)), 3, 200 )
 			
 			end
-
+		
 		end
 
 	end
+table.insert(historyScore, histSc)
 
 end
 
+-----DRAW HISTORY OF SCORES
+for i = 1,#historyScore do 
+	for j = 1, #historyScore[i] do 
+		love.graphics.circle( "fill", i, 10 + 500-100*historyScore[i][j] , 1, 255 )
+	end
+end
+if #historyScore > 1000 then 
+	historyScore = {}
+end
 
  -- -- let's draw some ground
  -- love.graphics.setColor(0,255,0,255)

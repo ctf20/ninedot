@@ -62,7 +62,7 @@ end
 function hFES:makeMoveTD()
 	
 	local bla, preScore = self.problem:getScoreCurrentPosition()
-
+	
 	local move_id = shuffled(self.problem:getMoves())
 	local values, activeClassifiers = self:getValues(move_id)
 	-- local chosenMove = self:eGreedyChoice(move_id,values)
@@ -71,8 +71,8 @@ function hFES:makeMoveTD()
 	local chosenMove = self:eGreedyChoice(move_id, values)
 	self.problem:updateBoard(move_id[chosenMove])
 
-	local bla, postScore = self.problem:getScoreCurrentPosition()
-
+	local bla2, postScore = self.problem:getScoreCurrentPosition()
+	--print("instant reward = " .. preScore .. " " .. postScore)
 	self:updateRollout(activeClassifiers[chosenMove], postScore-preScore)
 
 end
@@ -139,7 +139,7 @@ function hFES:getValues(moves)
 		-- print(move)
 		self.problem:makePotentialMove(move)
 		-- print(self.problem.bs.pp)
-		local matchedClassifiers = self:getActiveClassifiersForMove(move)
+		local matchedClassifiers = self:getActiveClassifiersForMove(move, false)
 		table.insert(activeClassifiers,matchedClassifiers)
 		table.insert(values, self:getValuesFromActiveClassifiers(matchedClassifiers))
 		self.problem:undoLastMove()
@@ -159,12 +159,12 @@ function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
 end 
 
 
-function hFES:getCurrentActiveClassifiers(moves)
-	local activeClassifiers = self:getActiveClassifiersForMove()
+function hFES:getCurrentActiveClassifiers(moves, visualize)
+	local activeClassifiers = self:getActiveClassifiersForMove(nil, visualize)
 	return activeClassifiers
 end
 
-function hFES:getActiveClassifiersForMove(move)
+function hFES:getActiveClassifiersForMove(move, visualize)
 	-- print("moves:")
 	-- print(moves)
 	local foveationSet = self.problem:getFoveationSet()
@@ -177,8 +177,8 @@ function hFES:getActiveClassifiersForMove(move)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
-			if #foveationWindow.matchings == 0 then
-				self:createClassifier(foveationWindow,1.0)
+			if #foveationWindow.matchings == 0 and visualize == false then
+				self:createClassifier(foveationWindow,0.5)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)
@@ -268,7 +268,7 @@ end
 function hFES:getImage()
 	--Call the problem specific board state printer 
 	--return {self.problem:getImage(), self.classifiers}
-	self:getCurrentActiveClassifiers() --Rematch classifiers to current board position. 
+	self:getCurrentActiveClassifiers(nil, true) --Rematch classifiers to current board position. 
 	--print("SENDING CLASSIFIERS " .. #self.classifiers)
 	return { self.problem:getImage(),self.classifiers }
 end	
@@ -276,7 +276,7 @@ end
 
 function hFES:eGreedyChoice(move_ids, score, epsilon)
 	
-	local epsilon = epsilon or 0.05 
+	local epsilon = epsilon or 0.05
 
 	--print("In eGreedyChoice")
 	local maxScore = -1000
