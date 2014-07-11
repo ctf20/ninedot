@@ -2,7 +2,7 @@
 --Run with /Applications/love.app/Contents/MacOS/love ~/Documents/ninedot/test in the directory /Users/chrisantha/Documents/ninedot/test
 require 'strict'
 require 'hfes'
-math.randomseed( os.time() )
+--math.randomseed( os.time() )
 
 function delay_s(delay)
   delay = delay or 1

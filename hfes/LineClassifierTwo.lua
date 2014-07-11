@@ -16,8 +16,8 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 	local specificity = specificity or 0.5
 	local linesMatrix = util.convertPPVecToMatrix(lines,windowRows,windowCols)
 	self.lines = {}
-	if lines:storage() ~= nil then
-		for i=1,lines:size()[1] do
+	if lines:storage() ~= nil then --go through each line. 
+		for i=1,lines:size()[1] do 
 			startX = lines[i][1][1]
 			startY = lines[i][1][2]
 			endX = lines[i][2][1]
@@ -35,9 +35,12 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 			end
 		end
 	end
-	for i=1,linesMatrix:storage():size() do
+	--Set elements in linesMatrix to -1 randomly..
+	for i=1,linesMatrix:storage():size() do 
 		if math.random() > specificity then
-			linesMatrix:storage()[i] = -1
+			if linesMatrix:storage()[i] == 0 then 
+				linesMatrix:storage()[i] = -1
+			end
 		end
 	end
 	self.linesMatrix = linesMatrix
