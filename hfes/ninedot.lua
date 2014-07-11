@@ -1,7 +1,7 @@
 local ninedot = torch.class('hfes.ninedot')
 
 function ninedot:__init(N, K, boardSize)
-	print("creating an {n,k,c}-problem xxxx")
+	print("creating an {n,k,c}-problem")
 
 	-- Create an (n,k,c) dot problem 
 	self.n = N or 1 --Default = A single dot 
@@ -59,7 +59,7 @@ function ninedot:__init(N, K, boardSize)
 						b}}]=self.tBoard:clone()
 	print(self.tBoard)
 	-- Create a data structure for storing an order of lines drawn 
-	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {{2,2},{2,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
 	--self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
 	--self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
@@ -117,7 +117,7 @@ function ninedot:resetBoardState()
 						{a,
 						b}}]=self.tBoard:clone()
 	print(self.tBoard)
-	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {{2,2},{2,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	self.fovWindows = {} --Global foveation window to pass for visualization later. 
 
 end
@@ -163,7 +163,7 @@ function ninedot:getScores(moves)
 	-- local scores = {}	
 	local scores = {}
 	local dots_covered, no_dots = self:getScoreCurrentPosition()
-	-- print(dots_covered)
+	
 	-- print(no_dots)
 	local last_move = self.bs.pp[#self.bs.pp]
 	for i,move in ipairs(moves) do
@@ -200,7 +200,7 @@ function ninedot:getScoreCurrentPosition()
 		end
 	end
 	-- self:printDotsCovered(dots_covered)
-	return dots_covered,self:countDotsCovered(dots_covered)
+	return dots_covered , self:countDotsCovered(dots_covered)
 end
 
 function ninedot:printDotsCovered(dots_covered)
