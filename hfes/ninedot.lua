@@ -403,7 +403,7 @@ function ninedot:getFoveationSet()
 			foveationWindow.lines,foveationWindow.linesMatrix = self:extractLinesInLargeWindow(foveationWindow,lPPS,size[1],size[2])
 			-- print("lines")
 			-- print(foveationWindow.lines)
-			foveationWindow.lastPP = self:extractLastPPInLargeWindow(foveationWindow,lPPS)
+			foveationWindow.lastPP,foveationWindow.pointMatrix = self:extractLastPPInLargeWindow(foveationWindow,lPPS,size[1],size[2])
 			-- print("lastPP")
 			-- print(foveationWindow.lastPP)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
@@ -472,12 +472,15 @@ function ninedot:extractLinesInLargeWindow(window,lPPS,rows,columns)
 	return lines,linesMatrix
 end
 
-function ninedot:extractLastPPInLargeWindow(window,lPPS)
+function ninedot:extractLastPPInLargeWindow(window,lPPS,rows,columns)
 	local lastPP = {}
 	if #lPPS >= 1 and 
 	(lPPS[#lPPS][1] >= window.row_min and lPPS[#lPPS][1] <= window.row_max) and
     (lPPS[#lPPS][2] >= window.col_min and lPPS[#lPPS][2] <= window.col_max) then
 		lastPP = {lPPS[#lPPS][1]-window.row_min+1,lPPS[#lPPS][2]-window.col_min+1}
 	end
-	return torch.Tensor(lastPP)
+	lastPP = torch.Tensor(lastPP)
+	local pointMatrix = util.convertPointToMatrix(lastPP,rows,columns)
+
+	return lastPP,pointMatrix
 end

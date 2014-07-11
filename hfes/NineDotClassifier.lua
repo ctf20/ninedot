@@ -5,7 +5,7 @@ function NineDotClassifier:__init(grid,lines,lastPP)
 	-- print("creating a classifier")
 	self.grid = grid or hfes.GridClassifier()
 	self.lines = lines or hfes.LineClassifierTwo()
-	self.lastPP = lastPP or hfes.PointClassifier()
+	self.lastPP = lastPP or hfes.PointClassifierTwo()
 end
 
 function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,specificity)
@@ -13,12 +13,12 @@ function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,spe
 	self.grid:createCover(grid,specificity)
 	-- print(foveationWindow)
 	self.lines:createCover(lines,foveationWindow.rows,foveationWindow.cols,specificity)
-	self.lastPP:createCover(lastPP,specificity)
+	self.lastPP:createCover(lastPP,foveationWindow.rows,foveationWindow.cols,specificity)
 end
 
-function NineDotClassifier:match(grid,linesMatrix,lastPP)
+function NineDotClassifier:match(grid,linesMatrix,pointMatrix)
 	local match = true
-	local params = {grid,linesMatrix,lastPP}
+	local params = {grid,linesMatrix,pointMatrix}
 	for i,classifier in ipairs({self.grid,self.lines,self.lastPP}) do
 		-- print(classifier)
 		local matchesClassifier = classifier:match(params[i])

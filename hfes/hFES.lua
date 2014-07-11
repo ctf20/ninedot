@@ -238,7 +238,7 @@ function hFES:matchClassifiers(foveationWindow)
 		local matched = classifier.classifier:match(
 									foveationWindow.dots,
 			 						foveationWindow.linesMatrix,
-			 						foveationWindow.lastPP)
+			 						foveationWindow.pointMatrix)
 		if matched then
 			table.insert(matchingSet,i)
 		end

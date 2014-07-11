@@ -112,3 +112,14 @@ end
 function util.convertCoords(x,y,cols)
   return ((x-1) * cols) + y
 end
+
+function util.convertPointToMatrix(point,rows,columns)
+  -- print("r/c:")
+  -- print(rows)
+  -- print(columns)
+  local matrix = torch.Tensor(rows,columns):fill(0)
+  if point:storage() ~= nil then
+      matrix[point[1]][point[2]] = 1
+  end
+  return matrix
+end
