@@ -33,18 +33,16 @@ end
 function love.update(dt)
 
 	-- Start 
-
+	
 	-- Step 
 	if step <= nd.k then 
-	 	--print("doing move:" .. step)
-	 	--d:makeMove()
-	 	d:makeMoveTD()
+	 	print("doing move:" .. step)
+	 	d:makeMove()
  		--d:printBoardState()
 	step = step + 1 
 	elseif step > nd.k then 
 		--Called after game over. 
-		d:updateValues()
-		d:clearRollouts()
+		
 		--Need to reset the problem and do another one. 
 		d:resetBoardState()
 		--Start of game 
@@ -62,24 +60,24 @@ end
 
 
 function love.draw()
-delay_s(1)
+--delay_s(0)
  
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
-stuffToDrawBigX = stuffToDrawBig[1] 
+local stuffToDrawBigX = stuffToDrawBig[1] 
 local classifiers = stuffToDrawBig[2] --Contains ALL the classifiers so far!!!
 
 local stuffToDraw = stuffToDrawBigX[1]
-local foveationsBig = stuffToDrawBigX[2] 
+local foveationsBig = stuffToDrawBigX[2]  
 
 --print("checking foveation data structure")
---print(#foveationsBig) -- Prints 9 foveations 
+print(#foveationsBig) -- Prints 9 foveations 
 
 if #foveationsBig > 0 then
 	foveations = foveationsBig[1].foveationWindows
 	fovCoords = foveationsBig[1].center 
-	--print(fovCoords[1])
-	--print(fovCoords[2])
+	print(fovCoords[1])
+	print(fovCoords[2])
 else
 	foveations = {}
 end

@@ -60,7 +60,7 @@ function ninedot:__init(N, K, boardSize)
 						b}}]=self.tBoard:clone()
 	print(self.tBoard)
 	-- Create a data structure for storing an order of lines drawn 
-	self.bs.pp = {{1,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	-- table.insert(self.bs.pp, {0,1}) bs.pp takes a table of coordinates for the pen position, like this.
 	--self.foveationWindow = {rows=self.boardDiag,columns=self.boardDiag}
 	--self.classifierWindow = {rows=self.boardDiag,columns=self.boardDiag}
@@ -117,8 +117,8 @@ function ninedot:resetBoardState()
 						b},
 						{a,
 						b}}]=self.tBoard:clone()
-	print(self.tBoard)
-	self.bs.pp = {{1,2}} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
+	--print(self.tBoard)
+	self.bs.pp = {} -- Line state (sequence of dot positions that the pen has been on.) pp = pen positions 
 	self.fovWindows = {} --Global foveation window to pass for visualization later. 
 
 end
@@ -282,8 +282,8 @@ function ninedot:checkDot(x,y, dots_covered)
 end
 
 function ninedot:updateBoard(chosenMove)
-	print("best move:")
-	print(chosenMove)
+	--print("best move:")
+	--print(chosenMove)
 	self.bs.dots[chosenMove[1]][chosenMove[2]] = 1 
 	table.insert(self.bs.pp, chosenMove)
 end
