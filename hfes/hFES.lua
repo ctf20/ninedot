@@ -15,6 +15,9 @@ function hFES:__init(problem)
 
 	self.rollouts = {} --Stores the set of active classifiers 
 
+	--Efficiently hashable binary string data structure. 
+	
+
 end
 
 

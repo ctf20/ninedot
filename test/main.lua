@@ -298,7 +298,7 @@ if #foveationsBig > 0 then
 table.insert(historyScore, histSc)
 
 end
-
+love.graphics.setColor(230,20,9,255)
 -----DRAW HISTORY OF SCORES
 for i = 1,#historyScore do 
 	for j = 1, #historyScore[i] do 

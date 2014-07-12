@@ -11,9 +11,10 @@ end
 function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,specificity)
 	local specificity = specificity or 0.5
 	self.grid:createCover(grid,specificity)
-	-- print(foveationWindow)
 	self.lines:createCover(lines,foveationWindow.rows,foveationWindow.cols,specificity)
 	self.lastPP:createCover(lastPP,foveationWindow.rows,foveationWindow.cols,specificity)
+
+	--Once the classifier has been constructed, translate its condition into an efficiently searchable form. 
 end
 
 function NineDotClassifier:match(grid,linesMatrix,pointMatrix)
