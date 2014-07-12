@@ -1,6 +1,6 @@
 --- creates a class "hierarchical Feature Evolution System"
 local hFES = torch.class('hfes.hFES')
-
+local plPretty = require 'pl.pretty'
 
 --- the initializer
 function hFES:__init(problem)
@@ -239,10 +239,15 @@ function hFES:matchClassifiers(foveationWindow)
 	local matchingSet = {}
 	for i,classifier in ipairs(self.classifiers) do
 		-- print("matching class:" .. i)
-		local matched = classifier.classifier:match(
-									foveationWindow.dots,
-			 						foveationWindow.linesMatrix,
-			 						foveationWindow.pointMatrix)
+		-- local matched = classifier.classifier:match(
+		-- 							foveationWindow.dots,
+		-- 	 						foveationWindow.linesMatrix,
+		-- 	 						foveationWindow.pointMatrix)
+		local matched = classifier.classifier:match(foveationWindow.binaryVector)
+		-- print("fwbinary")
+		-- plPretty.dump(foveationWindow.binaryVector)
+		-- print("classifier")
+		-- plPretty.dump(classifier.classifier.binaryClassifier)
 		if matched then
 			table.insert(matchingSet,i)
 		end

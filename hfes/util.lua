@@ -2,6 +2,12 @@
 
 util = {}
 
+local function strToTable(input)
+  local t = {}
+  input:gsub(".",function(c) table.insert(t,c) end)
+  return t
+end
+
 function table.val_to_str ( v )
   if "string" == type( v ) then
     v = string.gsub( v, "\n", "\\n" )
@@ -53,6 +59,10 @@ local function numElements(t)
     k = k * t:size()[i]
   end
   return k
+end
+
+function util.flatten(t)
+  return torch.reshape(t,1,numElements(t))
 end
 
 function util.matchTensor(a,b)
@@ -123,3 +133,99 @@ function util.convertPointToMatrix(point,rows,columns)
   end
   return matrix
 end
+
+------------------------------------------
+-- matching
+------------------------------------------
+
+local function bits(num)
+    local t={}
+    local rest
+    while num>0 do
+        rest=num%2
+        table.insert(t,1,rest)
+        num=(num-rest)/2
+    end
+    return table.concat(t)
+end
+
+local function convertTableToClassifierFormat(input)
+  local t = {}
+  for i,b in ipairs(input) do
+    table.insert(t,convertBitToClassifierBit(b))
+  end
+  return table.concat(t)
+end
+
+local function convertBitToClassifierBit(b)
+  local output = ""
+  if b == "0" or b == 0 then
+    output = "01"
+  elseif b == "1" or b == 1 then
+    output = "10"
+  else
+    output = "11"
+  end
+  return output
+end
+
+local function splitInto32(input)
+  local noSplits = math.ceil(#input/15)
+  print(noSplits)
+  local t = {}
+  for i=1,noSplits do
+    table.insert(t,{})
+  end
+  local split = 0
+  for i,b in ipairs(input) do
+    -- print("i:" .. i)
+    if (i-1)%15 == 0 then
+      split = split + 1
+      -- print("split:" .. split)
+    end
+    table.insert(t[split],convertBitToClassifierBit(b))
+  end
+  return t
+end
+
+local function concat32TablesToStrings(t)
+  local strTable = {}
+  for i,split in ipairs(t) do
+    table.insert(strTable,table.concat(split))
+  end
+  return strTable
+end
+
+local function convertStrTableToIntTable(t)
+  local intTable = {}
+  for i,split in ipairs(t) do
+    table.insert(intTable,tonumber(split,2))
+  end
+  return intTable
+end
+
+function util.getConvertedIntTable(input)
+  local splits32 = splitInto32(input)
+  local strTable = concat32TablesToStrings(splits32)
+  local intTable = convertStrTableToIntTable(strTable)
+  return intTable
+end
+
+function util.matchClassifierBinary(input,pattern)
+  return bit.band(tonumber(input,2),tonumber(pattern),2) == input
+end
+
+function util.matchClassifierInteger(input,pattern)
+  return bit.band(input,pattern) == input
+end
+
+function util.matchClassifierIntegerTable(inputT,patternT)
+  local match = true
+  for i=1,#inputT do
+    if util.matchClassifierInteger(inputT[i],patternT[i]) == false then
+      return false
+    end
+  end
+  return match
+end
+

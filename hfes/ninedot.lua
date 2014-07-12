@@ -1,4 +1,5 @@
 local ninedot = torch.class('hfes.ninedot')
+local plPretty = require 'pl.pretty'
 
 function ninedot:__init(N, K, boardSize)
 	print("creating an {n,k,c}-problem")
@@ -406,6 +407,7 @@ function ninedot:getFoveationSet()
 			foveationWindow.lastPP,foveationWindow.pointMatrix = self:extractLastPPInLargeWindow(foveationWindow,lPPS,size[1],size[2])
 			-- print("lastPP")
 			-- print(foveationWindow.lastPP)
+			foveationWindow.binaryVector = self:foveationWindowBinaryClassifier(foveationWindow)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
 		foveationPosition.dotCord = self.bs.dotsCords[i]
@@ -483,4 +485,25 @@ function ninedot:extractLastPPInLargeWindow(window,lPPS,rows,columns)
 	local pointMatrix = util.convertPointToMatrix(lastPP,rows,columns)
 
 	return lastPP,pointMatrix
+end
+
+function ninedot:foveationWindowBinaryClassifier(window)
+	local t = {}
+	local longDots = util.flatten(window.dots)
+	local longLinesMatrix = util.flatten(window.linesMatrix)
+	local longPointMatrix = util.flatten(window.pointMatrix)
+	for i=1,longDots:storage():size() do
+		table.insert(t,longDots:storage()[i])
+	end
+	for i=1,longLinesMatrix:storage():size() do
+		table.insert(t,longLinesMatrix:storage()[i])
+	end
+	for i=1,longPointMatrix:storage():size() do
+		table.insert(t,longPointMatrix:storage()[i])
+	end
+	print("t:")
+	-- plPretty.dump(t)
+	print("tsize:",#t)
+
+	return util.getConvertedIntTable(t)
 end
