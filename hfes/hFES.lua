@@ -16,7 +16,7 @@ function hFES:__init(problem)
 	self.rollouts = {} --Stores the set of active classifiers 
 
 	--Efficiently hashable binary string data structure. 
-	
+	self.templatesIntegers = {}
 
 end
 
@@ -90,7 +90,7 @@ function hFES:updateValues()
 		end
 		table.insert(values, v)
 	end
-	local alpha = 0.1
+	local alpha = 0.01
 	local val = 0 
 	for i = 1, #self.rollouts do 
 		for j = 1, #self.rollouts[i].activeClassifiers do 
@@ -101,7 +101,7 @@ function hFES:updateValues()
 			end
 			self.classifiers[self.rollouts[i].activeClassifiers[j]].weight = 
 				self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + 
-				alpha * (self.rollouts[i].reward + 0.5*val - values[i])
+				alpha * (self.rollouts[i].reward + 0.2*val - values[i])
 		end
 	end
 
@@ -148,9 +148,9 @@ function hFES:getValues(moves)
 		self.problem:undoLastMove()
 	end
 
-	for i = 1, #values do 
-		print(values[i])
-	end
+	-- for i = 1, #values do 
+	-- 	print(values[i])
+	-- end
 
 	return values, activeClassifiers
 end
@@ -185,7 +185,8 @@ function hFES:getActiveClassifiersForMove(move, visualize)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
-				self:createClassifier(foveationWindow,1.0)
+				self:createClassifier(foveationWindow,0.8)
+
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			-- print("#matchings end:" .. #foveationWindow.matchings)
@@ -220,6 +221,10 @@ function hFES:createClassifier(foveationWindow,specificity)
 								foveationWindow,
 								specificity
 								)
+
+	--Add this classifiers condition to the self.templatesIntegers data structure. 
+	self:addConditionToTemplatesIntegers(classifier)
+
 	-- print("classifier grid")
 	-- print(classifier.grid.grid)
 	-- print("classifier lines")
@@ -234,23 +239,94 @@ function hFES:createClassifier(foveationWindow,specificity)
 	foveationWindow.matchings={#self.classifiers}
 end
 
+
+function hFES:fastClassifierMatching(foveationWindow)
+	
+	local matchingSet = {}
+
+	bsIntegers = self:convertFoveationWindowToIntegers(foveationWindow)
+	matchingSet =  self:getMatches(bsIntegers)
+	
+	return matchingSet
+
+end
+
+function hFES:addConditionToTemplatesIntegers(classifier) 
+
+
+
+end
+
+
+function hFES:convertFoveationWindowToIntegers(foveationWindow) 
+
+--Convert foveation window to the binary number using the condition reading convention. 
+
+
+
+
+end
+
+function hFES:getMatches(bsIntegers)
+
+  local matchedTemplates = {}
+
+  for i = 1, #self.templatesIntegers do 
+    local mat = 1 
+    --print(" template " .. i .. " is ")
+    for j = 1, #self.templatesIntegers[i] do 
+      --io.write(templatesIntegers[i][j].. " " )
+      --print("")
+      --print("comparing")
+      --print(to_binary(templatesIntegers[i][j]))
+      --print(to_binary(bsIntegers[j]))
+      --print("result = ----------")
+      --result = bit.band(templatesIntegers[i][j], bsIntegers[j])
+      --print(bit.tohex(templatesIntegers[i][j]))
+      result = bit.band(bit.tobit(self.templatesIntegers[i][j]), bit.tobit(bsIntegers[j]))
+      --result = bit.band(bit.tohex(12), bit.tohex(12))
+      --print(to_binary(result))
+
+      --print(bit.tobit(templatesIntegers[i][j]) .. " AND " .. bit.tobit(bsIntegers[j]) .. " => " .. bit.tobit(result) .. " " )
+      if bit.tobit(bsIntegers[j]) ~= bit.tobit(result) then 
+        --print("not matched")
+        mat = 0 
+        break     
+      end 
+    end
+    if mat == 1 then 
+      --print("MATCHED")
+      table.insert(matchedTemplates, i)
+    end
+  end
+  return matchedTemplates
+end
+
 function hFES:matchClassifiers(foveationWindow)
 	-- print("in match classifiers")
 	-- print(self)
 	-- print("self.classifiers:")
 	-- print(self.classifiers)
 	local matchingSet = {}
-	for i,classifier in ipairs(self.classifiers) do
-		-- print("matching class:" .. i)
-		local matched = classifier.classifier:match(
-									foveationWindow.dots,
-			 						foveationWindow.linesMatrix,
-			 						foveationWindow.pointMatrix)
-		if matched then
-			table.insert(matchingSet,i)
-		end
-	end
+
+
+	matchingSet = self:fastClassifierMatching(foveationWindow)
+
+
+	-- for i,classifier in ipairs(self.classifiers) do
+	-- 	-- print("matching class:" .. i)
+	-- 	local matched = classifier.classifier:match(
+	-- 								foveationWindow.dots,
+	-- 		 						foveationWindow.linesMatrix,
+	-- 		 						foveationWindow.pointMatrix)
+	-- 	if matched then
+	-- 		table.insert(matchingSet,i)
+	-- 	end
+	-- end
+
+
 	return matchingSet
+
 end
 
 

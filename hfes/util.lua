@@ -123,3 +123,38 @@ function util.convertPointToMatrix(point,rows,columns)
   end
   return matrix
 end
+
+function util.getMatches(bsIntegers, templateIntegers)
+
+  local matchedTemplates = {}
+
+  for i = 1, #self.templatesIntegers do 
+    local mat = 1 
+    --print(" template " .. i .. " is ")
+    for j = 1, #self.templatesIntegers[i] do 
+      --io.write(templatesIntegers[i][j].. " " )
+      --print("")
+      --print("comparing")
+      --print(to_binary(templatesIntegers[i][j]))
+      --print(to_binary(bsIntegers[j]))
+      --print("result = ----------")
+      --result = bit.band(templatesIntegers[i][j], bsIntegers[j])
+      --print(bit.tohex(templatesIntegers[i][j]))
+      result = bit.band(bit.tobit(self.templatesIntegers[i][j]), bit.tobit(bsIntegers[j]))
+      --result = bit.band(bit.tohex(12), bit.tohex(12))
+      --print(to_binary(result))
+
+      --print(bit.tobit(templatesIntegers[i][j]) .. " AND " .. bit.tobit(bsIntegers[j]) .. " => " .. bit.tobit(result) .. " " )
+      if bit.tobit(bsIntegers[j]) ~= bit.tobit(result) then 
+        --print("not matched")
+        mat = 0 
+        break     
+      end 
+    end
+    if mat == 1 then 
+      --print("MATCHED")
+      table.insert(matchedTemplates, i)
+    end
+  end
+  return matchedTemplates
+end
