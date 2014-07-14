@@ -1,6 +1,7 @@
 require 'torch'
 hfes = {}
 
+torch.include('hfes','EClassifier.lua')
 torch.include('hfes','ClassifierModule.lua')
 torch.include('hfes','GridClassifier.lua')
 torch.include('hfes','LineClassifier.lua')

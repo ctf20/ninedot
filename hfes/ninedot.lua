@@ -501,9 +501,9 @@ function ninedot:foveationWindowBinaryClassifier(window)
 	for i=1,longPointMatrix:storage():size() do
 		table.insert(t,longPointMatrix:storage()[i])
 	end
-	print("t:")
+	--print("t:")
 	-- plPretty.dump(t)
-	print("tsize:",#t)
+	--print("tsize:",#t)
 
 	return util.getConvertedIntTable(t)
 end

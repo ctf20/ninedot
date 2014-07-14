@@ -52,3 +52,22 @@ function NineDotClassifier:createBinaryClassifier()
 	end
 	return util.getConvertedIntTable(t)
 end
+
+function NineDotClassifier:mutate(p)
+	for i,mod in ipairs({self.grid,self.lines,self.lastPP}) do
+		print("print i:" .. i)
+		mod:mutateSpecificMatrixRandomly(p)
+	end
+end
+
+function NineDotClassifier:duplicate()
+	local clone = hfes.NineDotClassifier()
+	clone.grid = self.grid:duplicate()
+	clone.lines = self.lines:duplicate()
+	clone.lastPP = self.lastPP:duplicate()
+	clone.binaryClassifier = {}
+	for i,b in ipairs(self.binaryClassifier) do
+		table.insert(clone.binaryClassifier,b)
+	end
+	return clone
+end

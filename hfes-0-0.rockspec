@@ -21,6 +21,7 @@ build = {
 		['hfes.ninedot'] = 'hfes/ninedot.lua',
 		['hfes.util'] = 'hfes/util.lua',
 		['hfes.Classifier'] = 'hfes/Classifier.lua',
+		['hfes.EClassifier'] = 'hfes/EClassifier.lua',
 		['hfes.NineDotClassifier'] = 'hfes/NineDotClassifier.lua',
 		['hfes.ClassifierModule'] = 'hfes/ClassifierModule.lua',
 		['hfes.GridClassifier'] = 'hfes/GridClassifier.lua',

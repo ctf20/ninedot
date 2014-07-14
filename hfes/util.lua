@@ -171,7 +171,7 @@ end
 
 local function splitInto32(input)
   local noSplits = math.ceil(#input/15)
-  print(noSplits)
+  -- print(noSplits)
   local t = {}
   for i=1,noSplits do
     table.insert(t,{})

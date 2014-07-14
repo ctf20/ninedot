@@ -28,3 +28,18 @@ function GridClassifier:createCover(dots,specificity)
 	self.grid = dotsTemplate
 	return self.grid	
 end
+
+function GridClassifier:mutateSpecificMatrixRandomly(p)
+	print("grid:stroage")
+	print(self.grid)
+	print(self.grid:storage():size())
+	self:mutateMatrixRandomly(self.grid,p)
+end
+
+function GridClassifier:duplicate()
+	local clone = hfes.GridClassifier()
+	clone.grid = self.grid:clone()
+	clone.rows = self.rows
+	clone.columns = self.columns
+	return clone
+end

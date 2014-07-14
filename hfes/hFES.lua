@@ -11,7 +11,8 @@ function hFES:__init(problem)
 	self.classifiers = {}
 	print("self.classifiers")
 	print(self.classifiers)
-	print("#self.classifiers:" .. #self.classifiers)
+	-- print("#self.classifiers:" .. #self.classifiers)
+	self.numClassifiers = 0
 
 	self.rollouts = {} --Stores the set of active classifiers 
 
@@ -52,9 +53,94 @@ end
 -- end
 
 
-function hFES:updateRollout(activeClassifiers, instantScore)
+function hFES:updateRollout(activeClassifiers, instantScore, foveationWindowsMoves, classifersToWindowsMoves)
 
-	table.insert(self.rollouts, {reward = instantScore, activeClassifiers = activeClassifiers})
+	table.insert(self.rollouts, {	reward = instantScore, activeClassifiers = activeClassifiers,
+									foveationWindows=foveationWindowsMoves, classifiersToWindows=classifersToWindowsMoves})
+
+end
+
+function hFES:evolveClassifiers() --Evolve the classifiers!! :) 
+
+--Choose two classifiers from each of the moves in the rollout 
+	local MAX_TOURNAMENTS = 1 
+	local POP_MAX = 100
+	for r = 1, #self.rollouts do --For each rollout, get the population 
+		local pop = self.rollouts[r].activeClassifiers 
+
+		for num_tournaments = 1, MAX_TOURNAMENTS do
+			--Choose two classifiers at random 
+			local a = self.classifiers[pop[math.random(1, #pop)]]
+			local b = self.classifiers[pop[math.random(1,#pop)]]
+			-- while( a == b) do 
+			-- 	local b = math.random(1,#pop)
+			-- end
+			local fita = a.fitness
+			local fitb = b.fitness
+			
+			local winner 
+			local loser 
+
+			if fita > fitb then 
+				winner = a
+				loser = b
+			else
+				loser = a
+				winner = b
+			end
+
+			--Winner will be replicated 
+			local child = winner:replicate()
+			--And mutated 
+			child:mutate()
+			--And must now be injected into the self.classifiers data structure. 
+			--table.insert(self.classifiers,child)
+			--If self.classifers > LIMIT then remove the worst classifier. 
+			--  if self.numClassifiers > POP_MAX then 
+			-- 	--print("HERe1")
+			-- 	-- print(self.classifiers)
+			-- 	-- holeNumber = self:deleteWorstClassifier(POP_MAX)
+			-- 	self.classifiers[holeNumber] = child
+			-- else
+			table.insert(self.classifiers, child)
+			self.numClassifiers = self.numClassifiers + 1 
+			print("CREATING CHILD ")
+			-- end
+
+		end
+
+
+	end
+
+end
+
+function hFES:deleteClassifiers(pop_max)
+
+	while self.numClassifiers > pop_max do 
+
+		self:deleteWorstClassifier(pop_max)
+
+	end
+
+end
+
+function hFES:deleteWorstClassifier(pop_max) 
+	--print("HERe2")
+	--print(self.classifiers)
+	if self.numClassifiers > pop_max then 
+		local worstClassifierFitness = 10000000
+		local worstClassifier = -1 
+		for k,v in pairs(self.classifiers) do 
+			if self.classifiers[k].fitness < worstClassifierFitness then 
+				worstClassifierFitness = self.classifiers[k].fitness
+				worstClassifier = k 
+			end
+		end
+
+		--Delete it here
+		self.classifiers[worstClassifier] = nil 
+		self.numClassifiers = self.numClassifiers - 1
+	end
 
 end
 
@@ -64,7 +150,12 @@ function hFES:makeMoveTD()
 	local bla, preScore = self.problem:getScoreCurrentPosition()
 	
 	local move_id = shuffled(self.problem:getMoves())
-	local values, activeClassifiers = self:getValues(move_id)
+
+
+	local  allScores = torch.Tensor(self.problem:getScores(move_id))
+	allScores = allScores - preScore
+
+	local values, activeClassifiers, foveationWindowsMoves, classifersToWindowsMoves = self:getValues(move_id, allScores)
 	-- local chosenMove = self:eGreedyChoice(move_id,values)
 	-- self.problem:updateBoard(chosenMove)	
 	--local score = self.problem:getScores(move_id) --I'm going to be using the getScores and moving according to get scores for now. 
@@ -73,7 +164,7 @@ function hFES:makeMoveTD()
 
 	local bla2, postScore = self.problem:getScoreCurrentPosition()
 	print("instant reward = " .. preScore .. " " .. postScore)
-	self:updateRollout(activeClassifiers[chosenMove], postScore-preScore)
+	self:updateRollout(activeClassifiers[chosenMove], postScore-preScore, foveationWindowsMoves[chosenMove], classifersToWindowsMoves[chosenMove])
 
 end
 
@@ -87,7 +178,7 @@ function hFES:updateValues()
 		end
 		table.insert(values, v)
 	end
-	local alpha = 0.1
+	local alpha = 0.05
 	local val = 0 
 	for i = 1, #self.rollouts do 
 		for j = 1, #self.rollouts[i].activeClassifiers do 
@@ -98,7 +189,7 @@ function hFES:updateValues()
 			end
 			self.classifiers[self.rollouts[i].activeClassifiers[j]].weight = 
 				self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + 
-				alpha * (self.rollouts[i].reward + 0.5*val - values[i])
+				alpha * (self.rollouts[i].reward + 0.0*val - values[i])
 		end
 	end
 
@@ -128,34 +219,48 @@ end
 
 -- end
 
-function hFES:getValues(moves)
+function hFES:getValues(moves, allScores)
 
 	--local rewards = self.problem:getScores(moves) --This calculates the cumulative reward obtained so far including the move. 
 	local activeClassifiers = {}
 	local values = {}
+	local foveationWindowsMoves = {}
+	local classifersToWindowsMoves = {}
 	for i,move in ipairs(moves) do
 		-- print("adding: ***********************************")
 		-- print(self.problem.bs.pp)
 		-- print(move)
 		self.problem:makePotentialMove(move)
 		-- print(self.problem.bs.pp)
-		local matchedClassifiers = self:getActiveClassifiersForMove(move, false)
+		local matchedClassifiers,foveationWindows,classifiersToWindows = self:getActiveClassifiersForMove(move, false, allScores[i])
 		table.insert(activeClassifiers,matchedClassifiers)
 		table.insert(values, self:getValuesFromActiveClassifiers(matchedClassifiers))
+		table.insert(foveationWindowsMoves,foveationWindows)
+		table.insert(classifersToWindowsMoves,classifiersToWindows)
 		self.problem:undoLastMove()
 	end
 
-	for i = 1, #values do 
-		print(values[i])
-	end
+	-- for i = 1, #values do 
+	-- 	print(values[i])
+	-- end
 
-	return values, activeClassifiers
+	return values, activeClassifiers, foveationWindowsMoves, classifersToWindowsMoves
 end
 
 function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
 
 	local val = 0 
-	for i = 1, #matchedClassifiers do 
+	for i = 1, #matchedClassifiers do
+		-- print("gv")
+		-- print("i:" .. i)
+		-- print(self.classifiers)
+		-- print("class ids")
+		-- print("matchedClassifiers:" .. #matchedClassifiers)
+		-- for k,v in pairs(self.classifiers) do
+		-- 	print(k)
+		-- end
+		-- print(matchedClassifiers[i])
+		--print(self.classifiers[matchedClassifiers[i]])
 		val = val + self.classifiers[matchedClassifiers[i]].weight
 	end
 	--print("Value for this move = " .. val)
@@ -163,28 +268,38 @@ function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
 end 
 
 
-function hFES:getCurrentActiveClassifiers(moves, visualize)
-	local activeClassifiers = self:getActiveClassifiersForMove(nil, visualize)
+function hFES:getCurrentActiveClassifiers(moves, visualize, score)
+	local activeClassifiers = self:getActiveClassifiersForMove(nil, visualize, score)
 	return activeClassifiers
 end
 
-function hFES:getActiveClassifiersForMove(move, visualize)
+function hFES:getActiveClassifiersForMove(move, visualize, score)
 	-- print("moves:")
 	-- print(moves)
 	local foveationSet = self.problem:getFoveationSet()
 	-- print("len f_set:" .. #foveationSet)
-	local classifiers = {}
 	local matchedSet = {}
+	local foveationWindows = {}
+	local classifiersToWindows = {}
 	for i,foveationPosition in ipairs(foveationSet) do
 		-- print("i:" .. i)
 		-- print("len f:" .. #foveationPosition.foveationWindows)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
+			table.insert(foveationWindows,foveationWindow)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
-				self:createClassifier(foveationWindow,1.0)
+				-- self:deleteExcessClassifiers()
+				self:createClassifier(foveationWindow,1.0, score)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
+			for i,m in ipairs(foveationWindow.matchings) do
+				if classifiersToWindows[m] then
+					table.insert(classifiersToWindows[m],#foveationWindows)
+				else
+					classifiersToWindows[m]={#foveationWindows}
+				end
+			end
 			-- print("#matchings end:" .. #foveationWindow.matchings)
 		end
 	end
@@ -193,7 +308,7 @@ function hFES:getActiveClassifiersForMove(move, visualize)
 	local activeClassifiers = util.getKeywords(matchedSet)
 	-- print("activeClassifiers:")
 	-- print(activeClassifiers)
-	return activeClassifiers
+	return activeClassifiers,foveationWindows,classifiersToWindows
 end
 
 function hFES:addClassifiersToSet(indexes,set)
@@ -202,8 +317,8 @@ function hFES:addClassifiersToSet(indexes,set)
 	end
 end
 
-function hFES:createClassifier(foveationWindow,specificity,weight)
-	local weight = weight or 0.0
+function hFES:createClassifier(foveationWindow,specificity,score)
+	local score = score or 0.0
 	local specificity = specificity or 0.1
 	-- print(foveationWindow.dots)
 	-- print("lines")
@@ -227,8 +342,12 @@ function hFES:createClassifier(foveationWindow,specificity,weight)
 	-- print(classifier:match(	foveationWindow.dots,
 	--  						foveationWindow.lines,
 	--  						foveationWindow.lastPP))
-	table.insert(self.classifiers,{classifier=classifier,weight=weight})
-	foveationWindow.matchings={#self.classifiers}
+	local newClassifier = hfes.EClassifier()
+	newClassifier.classifier=classifier
+	newClassifier:setValue(score)
+	table.insert(self.classifiers,newClassifier)
+	self.numClassifiers = self.numClassifiers + 1
+	foveationWindow.matchings={self.numClassifiers}
 end
 
 function hFES:matchClassifiers(foveationWindow)
@@ -237,7 +356,7 @@ function hFES:matchClassifiers(foveationWindow)
 	-- print("self.classifiers:")
 	-- print(self.classifiers)
 	local matchingSet = {}
-	for i,classifier in ipairs(self.classifiers) do
+	for k,classifier in pairs(self.classifiers) do
 		-- print("matching class:" .. i)
 		-- local matched = classifier.classifier:match(
 		-- 							foveationWindow.dots,
@@ -249,7 +368,7 @@ function hFES:matchClassifiers(foveationWindow)
 		-- print("classifier")
 		-- plPretty.dump(classifier.classifier.binaryClassifier)
 		if matched then
-			table.insert(matchingSet,i)
+			table.insert(matchingSet,k)
 		end
 	end
 	return matchingSet

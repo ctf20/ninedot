@@ -49,3 +49,14 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 	self.lines = torch.Tensor(self.lines)
 	return self.lines,self.linesMatrix
 end
+
+function LineClassifierTwo:duplicate()
+	local clone = hfes.LineClassifierTwo()
+	clone.lines = self.lines:clone()
+	clone.linesMatrix = self.linesMatrix:clone()
+	return clone
+end
+
+function LineClassifierTwo:mutateSpecificMatrixRandomly(p)
+	self:mutateMatrixRandomly(self.linesMatrix,p)
+end

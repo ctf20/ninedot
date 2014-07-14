@@ -36,3 +36,14 @@ function PointClassifierTwo:createCover(point,windowRows,windowCols,specificity)
 	self.pointMatrix = pointMatrix
 	return self.point,self.pointMatrix
 end
+
+function PointClassifierTwo:duplicate()
+	local clone = hfes.PointClassifierTwo()
+	clone.point = self.point:clone()
+	clone.pointMatrix = self.pointMatrix:clone()
+	return clone
+end
+
+function PointClassifierTwo:mutateSpecificMatrixRandomly(p)
+	self:mutateMatrixRandomly(self.pointMatrix,p)
+end

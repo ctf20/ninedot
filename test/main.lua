@@ -22,7 +22,7 @@ function love.load()
 	nd = hfes.ninedot(n,k,b)
 	d = hfes.hFES(nd)
 	step = 1 
-	local blabla = 0
+	--local blabla = 0
 	 -- hero = {} -- new table for the hero
 	 -- hero.x = 300    -- x,y coordinates of the hero
 	 -- hero.y = 450
@@ -36,6 +36,7 @@ function love.update(dt)
 
 	-- Start 
 
+
 	-- Step 
 	if step <= nd.k then 
 	 	--print("doing move:" .. step)
@@ -46,8 +47,15 @@ function love.update(dt)
 	elseif step > nd.k then 
 		--Called after game over. 
 		d:updateValues()
+
+
+		d:evolveClassifiers() --Evolve the classifiers!! :) 
+		
 		d:clearRollouts()
 		--Need to reset the problem and do another one. 
+		
+		d:deleteClassifiers(500)
+
 		d:resetBoardState()
 		--Start of game 
 
@@ -210,7 +218,7 @@ y = -20
 
 --print("number of classifiers in total = " .. #classifiers)
 love.graphics.setColor(0,255,255,255)
-love.graphics.print("No Classifiers: " .. #classifiers, 500, 10)
+love.graphics.print("No Classifiers: " .. d.numClassifiers, 500, 10)
 
 if #foveationsBig > 0 then
 	local histSc = {}
