@@ -48,7 +48,6 @@ function love.update(dt)
 		--Called after game over. 
 		d:updateValues()
 
-
 		d:evolveClassifiers() --Evolve the classifiers!! :) 
 		
 		d:clearRollouts()

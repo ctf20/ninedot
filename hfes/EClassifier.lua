@@ -13,9 +13,9 @@ function EClassifier:setValue(value)
 	self.weight = value
 	if self.valueHistory:storage() ~= nil then 
 		self.valueHistory = torch.cat(self.valueHistory,torch.Tensor({value}))
-		--print("concat")
+		print("concat*****************************************")
 	else
-		--print("fresh")
+		print("fresh")
 		self.valueHistory = torch.Tensor({value})  
 	end
 	--Fitness is always chanegd by a new value so we should recalculate it here. 
@@ -34,26 +34,26 @@ end
 
 
 function EClassifier:replicate()
-	print("REPLICATING ******************************")
+	--print("REPLICATING ******************************")
 	local clone = self:duplicate()
 	clone.fitness = 0.0
 	clone.weight = 0.0
 	clone.valueHistory = torch.Tensor({})
-	print("printing selfvh")
-	print(self.valueHistory)
+	--print("printing selfvh")
+	--print(self.valueHistory)
 	clone:setValue(self.valueHistory[-1])
 	return clone 
 end
 
 function EClassifier:duplicate()
-	print("IN CLONE")
+	--print("IN CLONE")
 	local clone = hfes.EClassifier()
 	clone.weight = self.weight
 	clone.classifier = self.classifier:duplicate()
 	clone.fitness = self.fitness
 	clone.valueHistory = self.valueHistory:clone()	
-	print(clone.valueHistory:storage():size())
-	print("KKK")
+	--print(clone.valueHistory:storage():size())
+	--print("KKK")
 	return clone 
 end
 

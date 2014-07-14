@@ -30,9 +30,9 @@ function GridClassifier:createCover(dots,specificity)
 end
 
 function GridClassifier:mutateSpecificMatrixRandomly(p)
-	print("grid:stroage")
-	print(self.grid)
-	print(self.grid:storage():size())
+	-- print("grid:stroage")
+	-- print(self.grid)
+	-- print(self.grid:storage():size())
 	self:mutateMatrixRandomly(self.grid,p)
 end
 

@@ -55,7 +55,7 @@ end
 
 function NineDotClassifier:mutate(p)
 	for i,mod in ipairs({self.grid,self.lines,self.lastPP}) do
-		print("print i:" .. i)
+		--print("print i:" .. i)
 		mod:mutateSpecificMatrixRandomly(p)
 	end
 end

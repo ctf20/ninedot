@@ -72,6 +72,19 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			--Choose two classifiers at random 
 			local a = self.classifiers[pop[math.random(1, #pop)]]
 			local b = self.classifiers[pop[math.random(1,#pop)]]
+
+			--Only replicate if both are beyond a certain age. 
+			if a.valueHistory:storage():size() < 5 or b.valueHistory:storage():size() < 5 then 
+				print("value history = " .. a.valueHistory:storage():size())
+				print("value history = " .. b.valueHistory:storage():size())
+				print("NOT REPLICATING ************************************")
+				return 
+			else
+				print("REPLICATING**************^^^^^^^^^^^^^^^^^^^^&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+				print("value history = " .. a.valueHistory:storage():size())
+				print("value history = " .. b.valueHistory:storage():size())
+			end
+
 			-- while( a == b) do 
 			-- 	local b = math.random(1,#pop)
 			-- end
@@ -104,7 +117,7 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			-- else
 			table.insert(self.classifiers, child)
 			self.numClassifiers = self.numClassifiers + 1 
-			print("CREATING CHILD ")
+			--print("CREATING CHILD ")
 			-- end
 
 		end
@@ -187,9 +200,13 @@ function hFES:updateValues()
 			else
 				val = values[i+1]
 			end
-			self.classifiers[self.rollouts[i].activeClassifiers[j]].weight = 
-				self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + 
-				alpha * (self.rollouts[i].reward + 0.0*val - values[i])
+
+			--self.classifiers[self.rollouts[i].activeClassifiers[j]].weight = 
+			--	self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + 
+			--	alpha * (self.rollouts[i].reward + 0.0*val - values[i])
+			--print(self.rollouts[i].activeClassifiers[j])
+			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + 0.0*val - values[i]))
+
 		end
 	end
 
@@ -259,7 +276,7 @@ function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
 		-- for k,v in pairs(self.classifiers) do
 		-- 	print(k)
 		-- end
-		-- print(matchedClassifiers[i])
+		print("matched classifiers = " .. matchedClassifiers[i])
 		--print(self.classifiers[matchedClassifiers[i]])
 		val = val + self.classifiers[matchedClassifiers[i]].weight
 	end
@@ -320,6 +337,7 @@ end
 function hFES:createClassifier(foveationWindow,specificity,score)
 	local score = score or 0.0
 	local specificity = specificity or 0.1
+	print("Creating classifier**********************************")
 	-- print(foveationWindow.dots)
 	-- print("lines")
 	-- print(foveationWindow.lines)
