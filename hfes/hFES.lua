@@ -202,8 +202,8 @@ function hFES:addClassifiersToSet(indexes,set)
 	end
 end
 
-function hFES:createClassifier(foveationWindow,specificity)
-
+function hFES:createClassifier(foveationWindow,specificity,weight)
+	local weight = weight or 0.0
 	local specificity = specificity or 0.1
 	-- print(foveationWindow.dots)
 	-- print("lines")
@@ -227,7 +227,7 @@ function hFES:createClassifier(foveationWindow,specificity)
 	-- print(classifier:match(	foveationWindow.dots,
 	--  						foveationWindow.lines,
 	--  						foveationWindow.lastPP))
-	table.insert(self.classifiers,{classifier=classifier,weight=0.0})
+	table.insert(self.classifiers,{classifier=classifier,weight=weight})
 	foveationWindow.matchings={#self.classifiers}
 end
 
