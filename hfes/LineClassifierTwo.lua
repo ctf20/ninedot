@@ -4,6 +4,7 @@ function LineClassifierTwo:__init(lines,linesMatrix)
 	parent.__init(self)
 	self.lines = lines or torch.Tensor({})
 	self.linesMatrix = lines or torch.Tensor({})
+	self.numHashes = 0 
 end
 
 function LineClassifierTwo:match(input)
@@ -26,6 +27,7 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 				local from = util.convertCoords(startX,startY,windowCols)
       			local to = util.convertCoords(endX,endY,windowCols)
       			linesMatrix[from][to] = -1
+      			self.numHashes = self.numHashes + 1
 			else
 				-- print("insert")
 				-- local a={{startX,startY},{endX,endY}}
@@ -40,6 +42,7 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 		if math.random() > specificity then
 			if linesMatrix:storage()[i] == 0 then 
 				linesMatrix:storage()[i] = -1
+				self.numHashes = self.numHashes + 1
 			end
 		end
 	end
@@ -54,9 +57,10 @@ function LineClassifierTwo:duplicate()
 	local clone = hfes.LineClassifierTwo()
 	clone.lines = self.lines:clone()
 	clone.linesMatrix = self.linesMatrix:clone()
+	clone.numHashes = self.numHashes
 	return clone
 end
 
 function LineClassifierTwo:mutateSpecificMatrixRandomly(p)
-	self:mutateMatrixRandomly(self.linesMatrix,p)
+	self.numHashes = self:mutateMatrixRandomly(self.linesMatrix,p)
 end

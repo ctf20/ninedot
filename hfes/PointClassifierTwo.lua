@@ -4,6 +4,7 @@ function PointClassifierTwo:__init(point,pointMatrix)
 	parent.__init(self)
 	self.point = point or torch.Tensor({})
 	self.pointMatrix = pointMatrix or torch.Tensor({})
+	self.numHashes = 0 
 end
 
 function PointClassifierTwo:match(input)
@@ -17,6 +18,7 @@ function PointClassifierTwo:createCover(point,windowRows,windowCols,specificity)
 	if point:storage() ~= nil then --go through each line. 
 		if math.random() > specificity then
   			pointMatrix[point[1]][point[2]] = -1
+  			self.numHashes = self.numHashes + 1
 		else
 			-- print("insert")
 			-- local a={{startX,startY},{endX,endY}}
@@ -30,6 +32,7 @@ function PointClassifierTwo:createCover(point,windowRows,windowCols,specificity)
 		if math.random() > specificity then
 			if pointMatrix:storage()[i] == 0 then 
 				pointMatrix:storage()[i] = -1
+				self.numHashes = self.numHashes + 1
 			end
 		end
 	end
@@ -41,9 +44,10 @@ function PointClassifierTwo:duplicate()
 	local clone = hfes.PointClassifierTwo()
 	clone.point = self.point:clone()
 	clone.pointMatrix = self.pointMatrix:clone()
+	clone.numHashes = self.numHashes
 	return clone
 end
 
 function PointClassifierTwo:mutateSpecificMatrixRandomly(p)
-	self:mutateMatrixRandomly(self.pointMatrix,p)
+	self.numHashes = self:mutateMatrixRandomly(self.pointMatrix,p)
 end

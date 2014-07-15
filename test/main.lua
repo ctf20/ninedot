@@ -6,7 +6,8 @@ local plPretty = require 'pl.pretty'
 --math.randomseed( os.time() )
 
 local historyScore = {}
-local roll = nil
+local historyGameScore = {}
+local historyGameScoreSlide = {}
 
 function delay_s(delay)
   delay = delay or 1
@@ -36,7 +37,7 @@ end
 
 function love.update(dt)
 
-	-- Start 
+	-- Start
 
 
 	-- Step
@@ -53,9 +54,22 @@ function love.update(dt)
 		d:updateValues()
 
 		d:evolveClassifiers() --Evolve the classifiers!! :) 
-		rol = d.rollouts
+		
+		local gameScore = 0 
+		for h = 1, #d.rollouts do 
+			gameScore = gameScore + d.rollouts[h].reward
+		end
+		print("Game score = " .. gameScore)
+		table.insert(historyGameScore, gameScore)
+		if #historyGameScoreSlide == 0 then 
+			table.insert(historyGameScoreSlide, 1)
+		else
+			table.insert(historyGameScoreSlide, 0.9*historyGameScoreSlide[#historyGameScoreSlide] + 0.1*gameScore)
+		end
+
 		--print(rol)
 		d:clearRollouts()
+
 		--Need to reset the problem and do another one. 
 		-- local ttt ={}
 		-- local cCount = 0
@@ -70,7 +84,7 @@ function love.update(dt)
 		-- 	plPretty.dump(d.classifiers)
 		-- end
 
-		d:deleteClassifiers(500)
+		d:deleteClassifiers(100)
 
 		d:resetBoardState()
 		--Start of game 
@@ -235,6 +249,8 @@ love.graphics.print("No Classifiers: " .. d.numClassifiers, 500, 10)
 
 if #foveationsBig > 0 then
 	local histSc = {}
+
+
 	for f = 1, #foveationsBig do --Go through each foveation position 
 
 		love.graphics.setColor(0,255,255,255)
@@ -326,9 +342,64 @@ for i = 1,#historyScore do
 		love.graphics.circle( "fill", i, 10 + 500-100*historyScore[i][j] , 1, 255 )
 	end
 end
-if #historyScore > 1000 then 
+if #historyScore > 500 then 
 	historyScore = {}
 end
+
+----DRAW HISTORY OF GAME SCORE 
+
+love.graphics.setColor(100,255,50,255)
+-----DRAW HISTORY OF SCORES
+for i = 1,#historyGameScore do 
+		love.graphics.circle( "fill", i*(nd.k+1), 10 + 500-100*historyGameScore[i] , 1, 255 )
+		love.graphics.setColor(100,105,0,255)
+		love.graphics.circle( "fill", i*(nd.k+1), 10 + 500-100*historyGameScoreSlide[i] , 1, 255 )
+		love.graphics.setColor(100,255,50,255)
+
+end
+if #historyGameScore > 500/(nd.k+1) then 
+	historyGameScore = {}
+	historyGameScoreSlide = {}
+	
+end
+
+----VISUALIZE THE PROPERTIES OF THE ROLLOUT 
+for i = 1 ,#d.rollouts do 
+
+	--Visualize properties of the active classifiers in the rollout 
+	for a = 1, #d.rollouts[i].activeClassifiers do 
+		love.graphics.setColor(255,10,255,255)
+
+		--PINK = estimated Match Set Size (also you can see this fromthe number of dots per rollout on the horizontal axis! )
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate , 5, 255 )
+		
+		--GREEN = FITNESS (the fitness tends to become very massively negative and explode eventually!!!)
+		love.graphics.setColor(0,255,100,255)
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-1000*d.classifiers[d.rollouts[i].activeClassifiers[a]].fitness , 5, 255 )
+
+		--YELLOW = length of value history i.e. number of times matched in total. 
+		love.graphics.setColor(255,255,00,255)
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].valueHistory:storage():size()  , 5, 255 )
+		
+		--BLUE = number of hashes in this classifier, i.e. its generality 
+		love.graphics.setColor(00,00,255,255)
+		local hash = d.classifiers[d.rollouts[i].activeClassifiers[a]].classifier.grid.numHashes + 
+					 d.classifiers[d.rollouts[i].activeClassifiers[a]].classifier.lines.numHashes + 
+					 d.classifiers[d.rollouts[i].activeClassifiers[a]].classifier.lastPP.numHashes
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-5*hash  , 5, 255 )
+		
+		--print(d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate)
+
+	end
+
+
+
+end
+
+-- table.insert(self.rollouts, {	reward = instantScore, activeClassifiers = activeClassifiers,
+-- 									foveationWindows=foveationWindowsMoves, classifiersToWindows=classifersToWindowsMoves})
+
+
 
  -- -- let's draw some ground
  -- love.graphics.setColor(0,255,0,255)

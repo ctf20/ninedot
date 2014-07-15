@@ -11,6 +11,9 @@ function GridClassifier:__init(grid)
 		self.rows = 0
 		self.columns = 0
 	end
+
+	self.numHashes = 0 
+
 end
 
 function GridClassifier:match(input)
@@ -23,6 +26,7 @@ function GridClassifier:createCover(dots,specificity)
 	for i=1,#dotsTemplate:storage() do
 		if math.random() > specificity then
 			dotsTemplate:storage()[i] = -1
+			self.numHashes = self.numHashes + 1
 		end
 	end
 	self.grid = dotsTemplate
@@ -33,7 +37,7 @@ function GridClassifier:mutateSpecificMatrixRandomly(p)
 	-- print("grid:stroage")
 	-- print(self.grid)
 	-- print(self.grid:storage():size())
-	self:mutateMatrixRandomly(self.grid,p)
+	self.numHashes = self:mutateMatrixRandomly(self.grid,p)
 end
 
 function GridClassifier:duplicate()
@@ -41,5 +45,7 @@ function GridClassifier:duplicate()
 	clone.grid = self.grid:clone()
 	clone.rows = self.rows
 	clone.columns = self.columns
+	clone.numHashes = self.numHashes
+	
 	return clone
 end

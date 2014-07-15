@@ -3,6 +3,7 @@ local LineClassifier,parent = torch.class('hfes.LineClassifier','hfes.Classifier
 function LineClassifier:__init(lines)
 	parent.__init(self)
 	self.lines = lines or torch.Tensor({})
+	self.numHashes = 0 
 end
 
 function LineClassifier:match(input)
