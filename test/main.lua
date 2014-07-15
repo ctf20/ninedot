@@ -16,8 +16,8 @@ end
 function love.load()
 
 --Initialize the ninedot problem here. 
-	local n = 2
-	local k = 2
+	local n = 1
+	local k = 1
 	local b = 3 
 	--First start 
 	nd = hfes.ninedot(n,k,b)
@@ -61,13 +61,13 @@ function love.update(dt)
 			cCount = cCount + 1
 			table.insert(ttt,"," .. v.fitness)
 		end
-		print("fitness classifiers")
-		print(table.concat(ttt))
-		print("n class:" .. cCount)
-		-- if cCount < 100 then
+		-- print("fitness classifiers")
+		-- print(table.concat(ttt))
+		-- print("n class:" .. cCount)
+		-- -- if cCount < 100 then
 		-- 	plPretty.dump(d.classifiers)
 		-- end
-		d:deleteClassifiers(500)
+		d:deleteClassifiers(100)
 
 		d:resetBoardState()
 		--Start of game 
@@ -317,7 +317,7 @@ if #foveationsBig > 0 then
 table.insert(historyScore, histSc)
 
 end
-
+love.graphics.setColor(255,100,50,255)
 -----DRAW HISTORY OF SCORES
 for i = 1,#historyScore do 
 	for j = 1, #historyScore[i] do 

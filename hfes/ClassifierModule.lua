@@ -18,5 +18,7 @@ function ClassifierModule:mutateMatrixRandomly(matrix,p)
 		if math.random() < p then
 			matrix:storage()[i] = -1
 		end
+		--I THINK WE NEED TO ADD INCREASING SPECIFICITY NOW TOO. 
+				
 	end
 end

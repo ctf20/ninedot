@@ -75,14 +75,14 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 
 			--Only replicate if both are beyond a certain age. 
 			if a.valueHistory:storage():size() < 5 or b.valueHistory:storage():size() < 5 then 
-				print("value history = " .. a.valueHistory:storage():size())
-				print("value history = " .. b.valueHistory:storage():size())
+				--print("value history = " .. a.valueHistory:storage():size())
+				--print("value history = " .. b.valueHistory:storage():size())
 				--print("NOT REPLICATING ************************************")
 				return 
 			else
-				print("REPLICATING**************^^^^^^^^^^^^^^^^^^^^&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-				print("value history = " .. a.valueHistory:storage():size())
-				print("value history = " .. b.valueHistory:storage():size())
+			-- 	print("REPLICATING**************^^^^^^^^^^^^^^^^^^^^&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+			-- 	print("value history = " .. a.valueHistory:storage():size())
+			-- 	print("value history = " .. b.valueHistory:storage():size())
 			end
 
 			-- while( a == b) do 
@@ -132,8 +132,31 @@ function hFES:deleteClassifiers(pop_max)
 
 	while self.numClassifiers > pop_max do 
 
-		self:deleteWorstClassifier(pop_max)
+		--self:deleteWorstClassifier(pop_max)
+		  self:deleteXCS(pop_max)
+	end
 
+end
+
+function hFES:deleteXCS(pop_max) 
+	
+	--ALWAYS DELETE A CLASSIFIER FROM THE LATEST MATCH SET, THIS SHOULD BE MATCH SET PROPORTIONATE REALLY 
+
+	if self.numClassifiers > pop_max then 
+		local worstClassifierFitness = -10000000
+		local worstClassifier = -1 
+		for k,v in pairs(self.classifiers) do 
+			if self.classifiers[k].matchSetEstimate > worstClassifierFitness then 
+				worstClassifierFitness = self.classifiers[k].matchSetEstimate
+				worstClassifier = k 
+			end
+		end
+
+		--Delete it here
+		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+		self.classifiers[worstClassifier] = nil 
+		self.numClassifiers = self.numClassifiers - 1
+	
 	end
 
 end
@@ -152,7 +175,7 @@ function hFES:deleteWorstClassifier(pop_max)
 		end
 
 		--Delete it here
-		print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
 		self.classifiers[worstClassifier] = nil 
 		self.numClassifiers = self.numClassifiers - 1
 	
@@ -185,7 +208,9 @@ function hFES:makeMoveTD()
 end
 
 function hFES:updateValues()
-	
+
+	local DISCOUNT = 0.0 
+	local ERROR_THRESHOLD = 0.001
 	local values = {}
 	for i = 1, #self.rollouts do 
 		local v = 0 
@@ -197,7 +222,9 @@ function hFES:updateValues()
 	local alpha = 0.05
 	local val = 0 
 	for i = 1, #self.rollouts do 
+		local totalAccuracy = 0 
 		for j = 1, #self.rollouts[i].activeClassifiers do 
+
 			if i == #self.rollouts then 
 				val = 0
 			else
@@ -209,9 +236,33 @@ function hFES:updateValues()
 			--	alpha * (self.rollouts[i].reward + 0.0*val - values[i])
 			--print(self.rollouts[i].activeClassifiers[j])
 			--print("WEIGHT= " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight)
-			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + 0.0*val - values[i]))
-			print("value in rollout = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].valueHistory:storage():size())
+			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
+			--print("value in rollout = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].valueHistory:storage():size())
+			
+
+			--XCS TYPE FITNESS CALCULATION HERE... NEED TO CHECK 
+			-- --Update accuracies and relative accuracies.***************
+			-- self.classifiers[self.rollouts[i].activeClassifiers[j]].error = math.sqrt(math.pow(self.rollouts[i].reward + DISCOUNT*val - values[i], 2))
+			-- if self.classifiers[self.rollouts[i].activeClassifiers[j]].error > ERROR_THRESHOLD then 
+			-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy = math.exp(math.log(0.1)*( (self.classifiers[self.rollouts[i].activeClassifiers[j]].error-ERROR_THRESHOLD)/ERROR_THRESHOLD))
+			-- 	print("ERROR > THRESHOLD **********accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
+			-- else
+			-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy = 1 
+			-- 	totalAccuracy = totalAccuracy + self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy 
+			-- 	print("ERROR < THRESHOLD accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
+			-- end
+			-- --Update accuracies and relative accuracies.***************
+
 		end
+		--XCS TYPE FITNESS CALCULATION HERE... NEED TO CHECK 
+		-- --START: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
+		-- for j = 1, #self.rollouts[i].activeClassifiers do 
+		-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy = self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy/totalAccuracy
+		-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]]:calcFitnessXCS()
+		-- end
+		-- --END: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
+
+
 	end
 
 
@@ -308,6 +359,13 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			table.insert(foveationWindows,foveationWindow)
 			foveationWindow.matchings = self:matchClassifiers(foveationWindow) 
+
+			--Update the matchSetEstimates of classifiers (estimates the size of the matching set over all foveation positions for this classiifer )
+			for i,m in ipairs(foveationWindow.matchings) do
+					self.classifiers[m].matchSetEstimate = 0.9*self.classifiers[m].matchSetEstimate  + 0.1*#foveationWindow.matchings
+					--print("MATCH ESTIMATE = " .. self.classifiers[m].matchSetEstimate)
+			end
+
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
@@ -397,6 +455,7 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	local newClassifier = hfes.EClassifier()
 	newClassifier.classifier=classifier
 	newClassifier:setValue(score/numPositions)
+	newClassifier.matchSetEstimate = 1 
 	--newClassifier:setValue(0)
 	self.numClassifiers = self.numClassifiers + 1
 	self.classifierIdHash = self.classifierIdHash + 1
@@ -427,7 +486,6 @@ function hFES:matchClassifiers(foveationWindow)
 		end
 	end
 	
-
 	return matchingSet
 end
 

@@ -58,6 +58,7 @@ function NineDotClassifier:mutate(p)
 		--print("print i:" .. i)
 		mod:mutateSpecificMatrixRandomly(p)
 	end
+	self.binaryClassifier = self:createBinaryClassifier()
 end
 
 function NineDotClassifier:duplicate()
