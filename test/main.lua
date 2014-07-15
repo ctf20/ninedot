@@ -54,7 +54,7 @@ function love.update(dt)
 
 		d:evolveClassifiers() --Evolve the classifiers!! :) 
 		rol = d.rollouts
-		print(rol)
+		--print(rol)
 		d:clearRollouts()
 		--Need to reset the problem and do another one. 
 		-- local ttt ={}
@@ -85,7 +85,6 @@ function love.update(dt)
 	-- end
 
 end
-
 
 function love.draw()
 --delay_s(1)

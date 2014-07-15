@@ -215,6 +215,7 @@ function hFES:updateValues()
 	local values = {}
 	for i = 1, #self.rollouts do 
 		local v = 0 
+		--print(#self.rollouts[i].activeClassifiers)
 		for j = 1, #self.rollouts[i].activeClassifiers do 
 			v = v + self.classifiers[self.rollouts[i].activeClassifiers[j]].weight
 		end
