@@ -2,6 +2,7 @@
 --Run with /Applications/love.app/Contents/MacOS/love ~/Documents/ninedot/test in the directory /Users/chrisantha/Documents/ninedot/test
 --require 'strict'
 require 'hfes'
+local plPretty = require 'pl.pretty'
 --math.randomseed( os.time() )
 
 local historyScore = {}
@@ -54,8 +55,19 @@ function love.update(dt)
 		
 		d:clearRollouts()
 		--Need to reset the problem and do another one. 
-		
-		d:deleteClassifiers(1000)
+		local ttt ={}
+		local cCount = 0
+		for k,v in pairs(d.classifiers) do
+			cCount = cCount + 1
+			table.insert(ttt,"," .. v.fitness)
+		end
+		print("fitness classifiers")
+		print(table.concat(ttt))
+		print("n class:" .. cCount)
+		-- if cCount < 100 then
+		-- 	plPretty.dump(d.classifiers)
+		-- end
+		d:deleteClassifiers(500)
 
 		d:resetBoardState()
 		--Start of game 

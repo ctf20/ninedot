@@ -32,7 +32,7 @@ function EClassifier:calcFitness()
 	end
 	print("fitness = " .. fit .. " variance = " .. torch.var(self.valueHistory) )
 
-	-- self.fitness = fit 
+	self.fitness = fit 
 	--fit = math.abs(self.weight)
 
 	return fit 

@@ -13,7 +13,7 @@ function hFES:__init(problem)
 	print(self.classifiers)
 	-- print("#self.classifiers:" .. #self.classifiers)
 	self.numClassifiers = 0
-
+	self.classifierIdHash = 0
 	self.rollouts = {} --Stores the set of active classifiers 
 
 end
@@ -115,8 +115,9 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			-- 	-- holeNumber = self:deleteWorstClassifier(POP_MAX)
 			-- 	self.classifiers[holeNumber] = child
 			-- else
-			table.insert(self.classifiers, child)
-			self.numClassifiers = self.numClassifiers + 1 
+			self.numClassifiers = self.numClassifiers + 1
+			self.classifierIdHash = self.classifierIdHash + 1
+			self.classifiers[self.classifierIdHash] = child
 			--print("CREATING CHILD ")
 			-- end
 
@@ -151,7 +152,7 @@ function hFES:deleteWorstClassifier(pop_max)
 		end
 
 		--Delete it here
-		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+		print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
 		self.classifiers[worstClassifier] = nil 
 		self.numClassifiers = self.numClassifiers - 1
 	
@@ -368,7 +369,6 @@ function hFES:addClassifiersToSet(indexes,set)
 end
 
 function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
-	print("num positions =" .. numPositions)
 	local score = score or 0.0
 	local specificity = specificity or 0.1
 	--print("Creating classifier**********************************")
@@ -399,8 +399,9 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	newClassifier:setValue(score/numPositions)
 	--newClassifier:setValue(0)
 	self.numClassifiers = self.numClassifiers + 1
-	self.classifiers[self.numClassifiers] = newClassifier
-	foveationWindow.matchings={self.numClassifiers}
+	self.classifierIdHash = self.classifierIdHash + 1
+	self.classifiers[self.classifierIdHash] = newClassifier
+	foveationWindow.matchings={self.classifierIdHash}
 
 end
 
