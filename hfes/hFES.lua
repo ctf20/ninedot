@@ -151,8 +151,10 @@ function hFES:deleteWorstClassifier(pop_max)
 		end
 
 		--Delete it here
+		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
 		self.classifiers[worstClassifier] = nil 
 		self.numClassifiers = self.numClassifiers - 1
+	
 	end
 
 end
@@ -207,7 +209,7 @@ function hFES:updateValues()
 			--print(self.rollouts[i].activeClassifiers[j])
 			--print("WEIGHT= " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight)
 			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + 0.0*val - values[i]))
-
+			print("value in rollout = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].valueHistory:storage():size())
 		end
 	end
 
@@ -308,8 +310,8 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
-				self:createClassifier(foveationWindow,1.0, score)
-				--print("iserted = " .. foveationWindow.matchings[1])
+				self:createClassifier(#foveationSet, foveationWindow,1.0, score)
+				print("iserted = " .. foveationWindow.matchings[1])
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -365,7 +367,8 @@ function hFES:addClassifiersToSet(indexes,set)
 	end
 end
 
-function hFES:createClassifier(foveationWindow,specificity,score)
+function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
+	print("num positions =" .. numPositions)
 	local score = score or 0.0
 	local specificity = specificity or 0.1
 	--print("Creating classifier**********************************")
@@ -393,7 +396,8 @@ function hFES:createClassifier(foveationWindow,specificity,score)
 	--  						foveationWindow.lastPP))
 	local newClassifier = hfes.EClassifier()
 	newClassifier.classifier=classifier
-	newClassifier:setValue(score)
+	newClassifier:setValue(score/numPositions)
+	--newClassifier:setValue(0)
 	self.numClassifiers = self.numClassifiers + 1
 	self.classifiers[self.numClassifiers] = newClassifier
 	foveationWindow.matchings={self.numClassifiers}

@@ -208,7 +208,6 @@ if #foveationsBig > 0 then
 end
 
 
-
 ----------------------------------------------------------------------------
 -- Print all the classifiers for each foveation position. 
 ----------------------------------------------------------------------------
@@ -216,7 +215,6 @@ x = 500
 y = -20
 
 --print("drawing classifiers")
-
 --print("number of classifiers in total = " .. #classifiers)
 love.graphics.setColor(0,255,255,255)
 love.graphics.print("No Classifiers: " .. d.numClassifiers, 500, 10)
@@ -290,7 +288,7 @@ if #foveationsBig > 0 then
 
 			end
 
-			
+
 			--Draw the classifier's POINT positions 
 			if classif.classifier.lastPP.point:storage() ~= nil then 
 

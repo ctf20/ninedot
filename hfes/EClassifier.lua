@@ -23,11 +23,18 @@ function EClassifier:setValue(value)
 end
 
 function EClassifier:calcFitness()
+	local fit 
+	if self.valueHistory:storage():size() == 1 then 
+		fit = 0
+	else
+--		fit = -torch.var(self.valueHistory)/(torch.mean(self.valueHistory)*(self.valueHistory:storage():size()))
+		fit = -torch.var(self.valueHistory)
+	end
+	print("fitness = " .. fit .. " variance = " .. torch.var(self.valueHistory) )
 
-	local fit = -torch.var(self.valueHistory)/torch.mean(self.valueHistory)
-	
-	self.fitness = fit 
-	
+	-- self.fitness = fit 
+	--fit = math.abs(self.weight)
+
 	return fit 
 
 end
