@@ -13,9 +13,9 @@ function EClassifier:setValue(value)
 	self.weight = value
 	if self.valueHistory:storage() ~= nil then 
 		self.valueHistory = torch.cat(self.valueHistory,torch.Tensor({value}))
-		print("concat*****************************************")
+		--print("concat*****************************************")
 	else
-		print("fresh")
+		--print("fresh")
 		self.valueHistory = torch.Tensor({value})  
 	end
 	--Fitness is always chanegd by a new value so we should recalculate it here. 
@@ -34,7 +34,7 @@ end
 
 
 function EClassifier:replicate()
-	--print("REPLICATING ******************************")
+--	print("REPLICATING ******************************")
 	local clone = self:duplicate()
 	clone.fitness = 0.0
 	clone.weight = 0.0

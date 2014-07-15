@@ -77,7 +77,7 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			if a.valueHistory:storage():size() < 5 or b.valueHistory:storage():size() < 5 then 
 				print("value history = " .. a.valueHistory:storage():size())
 				print("value history = " .. b.valueHistory:storage():size())
-				print("NOT REPLICATING ************************************")
+				--print("NOT REPLICATING ************************************")
 				return 
 			else
 				print("REPLICATING**************^^^^^^^^^^^^^^^^^^^^&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
@@ -205,6 +205,7 @@ function hFES:updateValues()
 			--	self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + 
 			--	alpha * (self.rollouts[i].reward + 0.0*val - values[i])
 			--print(self.rollouts[i].activeClassifiers[j])
+			--print("WEIGHT= " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight)
 			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + 0.0*val - values[i]))
 
 		end
@@ -276,7 +277,7 @@ function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
 		-- for k,v in pairs(self.classifiers) do
 		-- 	print(k)
 		-- end
-		print("matched classifiers = " .. matchedClassifiers[i])
+		--print("matched classifiers = " .. matchedClassifiers[i])
 		--print(self.classifiers[matchedClassifiers[i]])
 		val = val + self.classifiers[matchedClassifiers[i]].weight
 	end
@@ -303,11 +304,12 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 		-- print("len f:" .. #foveationPosition.foveationWindows)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			table.insert(foveationWindows,foveationWindow)
-			foveationWindow.matchings = self:matchClassifiers(foveationWindow)
+			foveationWindow.matchings = self:matchClassifiers(foveationWindow) 
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
 				self:createClassifier(foveationWindow,1.0, score)
+				--print("iserted = " .. foveationWindow.matchings[1])
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -320,9 +322,38 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 			-- print("#matchings end:" .. #foveationWindow.matchings)
 		end
 	end
+
+
+
 	-- print("matched set")
 	-- print(matchedSet)
 	local activeClassifiers = util.getKeywords(matchedSet)
+
+
+
+	local allinclassifiers = true
+
+	-- for k,v in ipairs(activeClassifiers) do 
+	-- 	local found = false
+	-- 	for j, cl in pairs(self.classifiers) do 
+	-- 		if v == j then 
+	-- 			found = true
+	-- 			break
+	-- 		end 
+	-- 	end
+	-- 	if found == false then 
+	-- 		allinclassifiers = false
+	-- 		print("not found " .. v )
+	-- 		break
+	-- 	end
+	-- end
+	-- if allinclassifiers == false then 
+	-- 	print("exiting ")
+	-- 	os.exit()
+
+	-- end
+
+
 	-- print("activeClassifiers:")
 	-- print(activeClassifiers)
 	return activeClassifiers,foveationWindows,classifiersToWindows
@@ -337,7 +368,7 @@ end
 function hFES:createClassifier(foveationWindow,specificity,score)
 	local score = score or 0.0
 	local specificity = specificity or 0.1
-	print("Creating classifier**********************************")
+	--print("Creating classifier**********************************")
 	-- print(foveationWindow.dots)
 	-- print("lines")
 	-- print(foveationWindow.lines)
@@ -363,9 +394,10 @@ function hFES:createClassifier(foveationWindow,specificity,score)
 	local newClassifier = hfes.EClassifier()
 	newClassifier.classifier=classifier
 	newClassifier:setValue(score)
-	table.insert(self.classifiers,newClassifier)
 	self.numClassifiers = self.numClassifiers + 1
+	self.classifiers[self.numClassifiers] = newClassifier
 	foveationWindow.matchings={self.numClassifiers}
+
 end
 
 function hFES:matchClassifiers(foveationWindow)
@@ -389,6 +421,8 @@ function hFES:matchClassifiers(foveationWindow)
 			table.insert(matchingSet,k)
 		end
 	end
+	
+
 	return matchingSet
 end
 

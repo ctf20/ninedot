@@ -37,7 +37,9 @@ function love.update(dt)
 	-- Start 
 
 
-	-- Step 
+	-- Step
+	--print("move number = " .. step)
+		 
 	if step <= nd.k then 
 	 	--print("doing move:" .. step)
 	 	--d:makeMove()
@@ -53,7 +55,7 @@ function love.update(dt)
 		d:clearRollouts()
 		--Need to reset the problem and do another one. 
 		
-		d:deleteClassifiers(500)
+		d:deleteClassifiers(1000)
 
 		d:resetBoardState()
 		--Start of game 
