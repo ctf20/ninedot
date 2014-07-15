@@ -132,8 +132,8 @@ function hFES:deleteClassifiers(pop_max)
 
 	while self.numClassifiers > pop_max do 
 
-		--self:deleteWorstClassifier(pop_max)
-		  self:deleteXCS(pop_max)
+		self:deleteWorstClassifier(pop_max)
+		  --self:deleteXCS(pop_max)
 	end
 
 end
@@ -151,6 +151,7 @@ function hFES:deleteXCS(pop_max)
 				worstClassifier = k 
 			end
 		end
+		print("deleting classifier with match set estimate : " .. worstClassifierFitness)
 
 		--Delete it here
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
@@ -261,7 +262,6 @@ function hFES:updateValues()
 		-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]]:calcFitnessXCS()
 		-- end
 		-- --END: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
-
 
 	end
 
@@ -392,7 +392,7 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 
 
 
-	local allinclassifiers = true
+	--local allinclassifiers = true
 
 	-- for k,v in ipairs(activeClassifiers) do 
 	-- 	local found = false

@@ -6,6 +6,7 @@ local plPretty = require 'pl.pretty'
 --math.randomseed( os.time() )
 
 local historyScore = {}
+local roll = nil
 
 function delay_s(delay)
   delay = delay or 1
@@ -52,22 +53,24 @@ function love.update(dt)
 		d:updateValues()
 
 		d:evolveClassifiers() --Evolve the classifiers!! :) 
-		
+		rol = d.rollouts
+		print(rol)
 		d:clearRollouts()
 		--Need to reset the problem and do another one. 
-		local ttt ={}
-		local cCount = 0
-		for k,v in pairs(d.classifiers) do
-			cCount = cCount + 1
-			table.insert(ttt,"," .. v.fitness)
-		end
+		-- local ttt ={}
+		-- local cCount = 0
+		-- for k,v in pairs(d.classifiers) do
+		-- 	cCount = cCount + 1
+		-- 	table.insert(ttt,"," .. v.fitness)
+		-- end
 		-- print("fitness classifiers")
 		-- print(table.concat(ttt))
 		-- print("n class:" .. cCount)
 		-- -- if cCount < 100 then
 		-- 	plPretty.dump(d.classifiers)
 		-- end
-		d:deleteClassifiers(100)
+
+		d:deleteClassifiers(500)
 
 		d:resetBoardState()
 		--Start of game 
