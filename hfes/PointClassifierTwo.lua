@@ -49,7 +49,7 @@ function PointClassifierTwo:duplicate()
 end
 
 function PointClassifierTwo:mutateSpecificMatrixRandomly(p)
-	self.numHashes = self:mutateMatrixRandomly(self.pointMatrix,p)
+	self:mutateMatrixRandomly(self.pointMatrix,p)
 end
 
 function PointClassifierTwo:mutateOperation(foveationWindows,p)

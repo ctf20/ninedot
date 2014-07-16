@@ -18,8 +18,8 @@ end
 function love.load()
 
 --Initialize the ninedot problem here. 
-	local n = 2
-	local k = 2
+	local n = 1
+	local k = 1
 	local b = 3 
 	--First start 
 	nd = hfes.ninedot(n,k,b)
@@ -84,7 +84,7 @@ function love.update(dt)
 		-- 	plPretty.dump(d.classifiers)
 		-- end
 
-		d:deleteClassifiers(2000)
+		d:deleteClassifiers(100)
 
 		d:resetBoardState()
 		--Start of game 
@@ -217,8 +217,8 @@ if #foveationsBig > 0 then
 		--Draw the foveation dot window in the right position. 
 		love.graphics.setColor(255,0,255,255)
 		-- Draw the board
-		local fx = foveationsBig[f].center[1]
-		local fy = foveationsBig[f].center[2]
+		local fx = 0 --foveationsBig[f].center[1]
+		local fy = 0 --foveationsBig[f].center[2]
 
 		--print ("fx = " .. fx .. " fy = ".. fy)
 		for i = 1, 5 do 
@@ -252,15 +252,23 @@ if #foveationsBig > 0 then
 
 
 	for f = 1, #foveationsBig do --Go through each foveation position 
-
+		local displace = 0
 		love.graphics.setColor(0,255,255,255)
 		-- Draw the board
-		local fx = foveationsBig[f].center[1]
-		local fy = foveationsBig[f].center[2]
+		local fx = 0 --foveationsBig[f].center[1]
+		local fy = 0 --foveationsBig[f].center[2]
 
 		-- Go through each matching classifier for this foveationWindow. 
 		--print("number of classifiers matching in foveationPosition " .. f .. " = " .. #foveationsBig[f].foveationWindows[1].matchings)
+
+		--Sort classifiers by WEIGHT 
+		table.sort(foveationsBig[f].foveationWindows[1].matchings, function (a,b) return (classifiers[a].weight > classifiers[b].weight) end )
+
 		for q = 1, #foveationsBig[f].foveationWindows[1].matchings do 
+
+			if q%10 == 0 then 
+				displace = displace + 1
+			end
 
 			love.graphics.setColor(0,255,255,255)
 
@@ -318,29 +326,29 @@ if #foveationsBig > 0 then
 
 			-- end
 
-			love.graphics.setLineWidth( 2 )
-			love.graphics.setColor(255,100,50,255)
-			--love.graphics.setColor(255,0,50,255)
-			local fovCols = math.ceil(math.sqrt(classif.classifier.lines.linesMatrix:size()[1]))
-			--print("length = " .. fovCols)
-			for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
-				for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
+			-- love.graphics.setLineWidth( 2 )
+			-- love.graphics.setColor(255,100,50,255)
+			-- --love.graphics.setColor(255,0,50,255)
+			-- local fovCols = math.ceil(math.sqrt(classif.classifier.lines.linesMatrix:size()[1]))
+			-- --print("length = " .. fovCols)
+			-- for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
+			-- 	for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
 					
-					if classif.classifier.lines.linesMatrix[i][j] == 1 then
-						local startX, startY = util.unconvertCoords(i,fovCols)
-						local endX, endY = util.unconvertCoords(j,fovCols)
+			-- 		if classif.classifier.lines.linesMatrix[i][j] == 1 then
+			-- 			local startX, startY = util.unconvertCoords(i,fovCols)
+			-- 			local endX, endY = util.unconvertCoords(j,fovCols)
 
-						print("line position = " .. i .. " " .. j )
-						print("start x = " .. startX)
-						print("start y = " .. startY)
-						print("end x = " .. endX)						
-						print("end y = " .. endY)
+			-- 			print("line position = " .. i .. " " .. j )
+			-- 			print("start x = " .. startX)
+			-- 			print("start y = " .. startY)
+			-- 			print("end x = " .. endX)						
+			-- 			print("end y = " .. endY)
 
-						love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
+			-- 			love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
 
-					end
-				end
-			end
+			-- 		end
+			-- 	end
+			-- end
 
 			-- --Draw the classifier's POINT positions 
 			-- if classif.classifier.lastPP.point:storage() ~= nil then 
@@ -354,8 +362,13 @@ if #foveationsBig > 0 then
 
 			for i = 1, classif.classifier.lastPP.pointMatrix:size()[1] do 
 				for j = 1, classif.classifier.lastPP.pointMatrix:size()[2] do 
-					love.graphics.setColor(0,0,255,255)
+				
 					if classif.classifier.lastPP.pointMatrix[i][j] == 1 then 
+						love.graphics.setColor(0,0,255,255)
+						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 5, 200 )
+					end
+					if classif.classifier.lastPP.pointMatrix[i][j] == 0 then
+						love.graphics.setColor(255,0,0,255) 
 						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 3, 200 )
 					end
 
@@ -421,6 +434,9 @@ for i = 1 ,#d.rollouts do
 		local hash = d.classifiers[d.rollouts[i].activeClassifiers[a]].classifier.grid.numHashes + 
 					 d.classifiers[d.rollouts[i].activeClassifiers[a]].classifier.lines.numHashes + 
 					 d.classifiers[d.rollouts[i].activeClassifiers[a]].classifier.lastPP.numHashes
+		
+		--print(hash ..  " == > " .. d.classifiers[d.rollouts[i].activeClassifiers[a]].totalHashes)
+
 		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-5*hash  , 5, 255 )
 		
 		--print(d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate)

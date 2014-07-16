@@ -13,6 +13,13 @@ function EClassifier:__init()
 	self.relativeAccuracy = 0 
 	self.accuracy = 0 --This is to be set in updateValue. 
 	self.error = 0 
+	self.totalHashes = 0 
+end
+
+function EClassifier:setTotalHashes()
+
+	self.totalHashes = self.classifier:getNumHashes()
+
 end
 
 function EClassifier:setValue(value)
@@ -27,7 +34,6 @@ function EClassifier:setValue(value)
 	end
 	--Fitness is always chanegd by a new value so we should recalculate it here. 
 	--self:calcFitness()
-
 	
 end
 
@@ -56,7 +62,7 @@ function EClassifier:calcFitnessXCS()
 	if self.valueHistory:storage():size() < 1/BETA then 
 		fit = (self.fitness + self.relativeAccuracy)/(self.valueHistory:storage():size())
 	else
-		fit = self.fitness + BETA*(self.relativeAccuracy - self.fitness)
+		fit = self.fitness + BETA*(self.relativeAccuracy - self.fitness) 
 	end
 --	print("acc = " .. self.relativeAccuracy )
 	self.fitness = fit 
@@ -93,6 +99,7 @@ function EClassifier:duplicate()
 	clone.relativeAccuracy = self.relativeAccuracy 
 	clone.accuracy = self.accuracy --This is to be set in updateValue. 
 	clone.error = self.error 
+	clone.totalHashes = self.totalHashes
 
 	--print(clone.valueHistory:storage():size())
 	--print("KKK")
@@ -101,4 +108,5 @@ end
 
 function EClassifier:mutate(foveationWindows,p)
 	self.classifier:mutate(foveationWindows,p)
+	self:setTotalHashes() 
 end

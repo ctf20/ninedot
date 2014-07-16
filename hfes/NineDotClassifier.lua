@@ -16,7 +16,17 @@ function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,spe
 	self.lines:createCover(lines,foveationWindow.rows,foveationWindow.cols,specificity)
 	self.lastPP:createCover(lastPP,foveationWindow.rows,foveationWindow.cols,specificity)
 	self.binaryClassifier = self:createBinaryClassifier()
+
 end
+
+function NineDotClassifier:getNumHashes()
+	local numHashes = 0
+	for i,class in ipairs({self.grid,self.lines,self.lastPP}) do
+		numHashes = numHashes + class.numHashes
+	end
+	return numHashes
+end
+
 
 -- function NineDotClassifier:match(grid,linesMatrix,pointMatrix)
 -- 	local match = true
@@ -58,6 +68,9 @@ function NineDotClassifier:mutate(foveationWindows,p)
 		print("print i:" .. i)
 		mod:mutateOperation(foveationWindows,p)
 	end
+
+	--HERE
+	
 	self.binaryClassifier = self:createBinaryClassifier()
 end
 

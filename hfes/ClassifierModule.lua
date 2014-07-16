@@ -13,30 +13,29 @@ end
 function ClassifierModule:mutateMatrixRandomly(matrix,p)
 --	print("matrix:stroage")
 --	print(matrix:storage():size())
-	local numHashes = 0 
+	
 	local p = p or (1/(matrix:storage():size()*1.0))
-	p = 0.1
+	--p = 0.1
 	for i=1,matrix:storage():size() do
-		if math.random() < p then
+		if matrix:storage()[i] ~= -1 and math.random() < p then
 			matrix:storage()[i] = -1
-			numHashes = numHashes + 1
+			self.numHashes = self.numHashes + 1
 		end
 		--I THINK WE NEED TO ADD INCREASING SPECIFICITY NOW TOO. 
 				
 	end
-	return numHashes 
+	
 end
 
 function ClassifierModule:mutateMatrixLamarckian(matrix,matchingMatrix,p)
 	local p = p or (1/(matrix:storage():size()*1.0))
-	p = 0.0
+	--p = 0.0
 	for i=1,matrix:storage():size() do
-		if math.random() < p then
+		if matrix:storage()[i]  == -1 and math.random() < p then
 			matrix:storage()[i] = self:getLamarckianElement(matchingMatrix,i)
 			self.numHashes = self.numHashes - 1
 		end
 	end
-	return self.numHashes 
 end
 
 function ClassifierModule:getLamarckianElement(matchingMatrix,i)

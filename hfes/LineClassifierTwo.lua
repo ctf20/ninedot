@@ -15,6 +15,7 @@ end
 
 function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 	local specificity = specificity or 0.5
+	specificity = 0.0
 	local linesMatrix = util.convertPPVecToMatrix(lines,windowRows,windowCols)
 	self.lines = {}
 	if lines:storage() ~= nil then --go through each line. 
@@ -62,7 +63,7 @@ function LineClassifierTwo:duplicate()
 end
 
 function LineClassifierTwo:mutateSpecificMatrixRandomly(p)
-	self.numHashes = self:mutateMatrixRandomly(self.linesMatrix,p)
+	self:mutateMatrixRandomly(self.linesMatrix,p)
 end
 
 function LineClassifierTwo:mutateOperation(foveationWindows,p)

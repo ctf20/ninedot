@@ -38,7 +38,7 @@ function GridClassifier:mutateSpecificMatrixRandomly(p)
 	-- print("grid:stroage")
 	-- print(self.grid)
 	-- print(self.grid:storage():size())
-	self.numHashes = self:mutateMatrixRandomly(self.grid,p)
+	self:mutateMatrixRandomly(self.grid,p)
 end
 
 function GridClassifier:mutateOperation(foveationWindows,p)

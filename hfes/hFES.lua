@@ -96,16 +96,43 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			local winner 
 			local loser 
 
-			if fita > fitb then 
+			-- if fita > fitb then 
+			-- 	winner = a
+			-- 	winner_id = a_id
+			-- 	loser = b
+			-- 	loser_id = b_id
+			-- else
+			-- 	loser = a
+			-- 	loser_id = a_id
+			-- 	winner = b
+			-- 	winner_id = b_id
+			-- end
+			print("fit a = " .. fita .. "fitb = " .. fitb .. " total hash a = ".. a.totalHashes .. " tot hash b = " .. b.totalHashes)
+			if ( fita > fitb and a.totalHashes >= b.totalHashes) or ( fita >= fitb and a.totalHashes > b.totalHashes) then 
+				
 				winner = a
 				winner_id = a_id
 				loser = b
 				loser_id = b_id
-			else
+
+			elseif ( fitb > fita and b.totalHashes >= a.totalHashes) or ( fitb >= fita and b.totalHashes > a.totalHashes) then 
+
 				loser = a
 				loser_id = a_id
 				winner = b
 				winner_id = b_id
+			else
+				if math.random() < 0.5 then 
+					winner = a
+					winner_id = a_id
+					loser = b
+					loser_id = b_id
+				else
+					loser = a
+					loser_id = a_id
+					winner = b
+					winner_id = b_id
+				end
 			end
 
 			--Winner will be replicated 
@@ -125,15 +152,15 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 				table.insert(windows,self.rollouts[r].foveationWindows[id])
 			end
 			child:mutate(windows)
-			print("parent:")
-			plPretty.dump(winner.classifier.grid.grid)
-			plPretty.dump(winner.classifier.lastPP.pointMatrix)
-			print("child:")
-			plPretty.dump(child.classifier.grid.grid)
-			plPretty.dump(child.classifier.lastPP.pointMatrix)
-			print("window")
-			plPretty.dump(windows[1].dots)
-			--And must now be injected into the self.classifiers data structure. 
+			-- print("parent:")
+			-- plPretty.dump(winner.classifier.grid.grid)
+			-- plPretty.dump(winner.classifier.lastPP.pointMatrix)
+			-- print("child:")
+			-- plPretty.dump(child.classifier.grid.grid)
+			-- plPretty.dump(child.classifier.lastPP.pointMatrix)
+			-- print("window")
+			-- plPretty.dump(windows[1].dots)
+			-- --And must now be injected into the self.classifiers data structure. 
 			--table.insert(self.classifiers,child)
 			--If self.classifers > LIMIT then remove the worst classifier. 
 			--  if self.numClassifiers > POP_MAX then 
@@ -288,9 +315,15 @@ function hFES:updateValues()
 		--START: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
 		for j = 1, #self.rollouts[i].activeClassifiers do 
 			--print("accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
-			--print("total accuracy  = " .. totalAccuracy)
+			if totalAccuracy > 0 then 
+				self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy = self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy/totalAccuracy
+			else
+				self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy = 0
+			end
+			-- print("RELATIVE ACCURACY = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy)
+			-- print(" total accuracy   = " .. totalAccuracy)
+			-- print(" accuracy  = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
 			
-			self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy = self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy/totalAccuracy
 			self.classifiers[self.rollouts[i].activeClassifiers[j]]:calcFitnessXCS()
 		end
 		--END: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
@@ -484,8 +517,10 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	-- print(classifier:match(	foveationWindow.dots,
 	--  						foveationWindow.lines,
 	--  						foveationWindow.lastPP))
+	-- TO DO PUT IN ECLASSIFIER> 
 	local newClassifier = hfes.EClassifier()
 	newClassifier.classifier=classifier
+	newClassifier:setTotalHashes()
 	newClassifier:setValue(score/numPositions)
 	newClassifier.matchSetEstimate = 1 
 	--newClassifier:setValue(0)
