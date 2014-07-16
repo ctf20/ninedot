@@ -15,7 +15,7 @@ function ClassifierModule:mutateMatrixRandomly(matrix,p)
 --	print(matrix:storage():size())
 	local numHashes = 0 
 	local p = p or (1/(matrix:storage():size()*1.0))
-	p = 1.0
+	p = 0.1
 	for i=1,matrix:storage():size() do
 		if math.random() < p then
 			matrix:storage()[i] = -1

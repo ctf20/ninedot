@@ -318,17 +318,42 @@ if #foveationsBig > 0 then
 
 			end
 
-
-			--Draw the classifier's POINT positions 
-			if classif.classifier.lastPP.point:storage() ~= nil then 
-
-				local startX = classif.classifier.lastPP.point[1]
-				local startY = classif.classifier.lastPP.point[2]
-				love.graphics.setColor(0,0,255,255)
-				love.graphics.circle( "fill", x + q* 50 + 7*(startX+ fx-math.ceil(5/2)),  y + f * 60 + 7*(startY + fy-math.ceil(5/2)), 3, 200 )
-			
+			for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
+				for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
+					love.graphics.setColor(0,0,255,255)
+					if classif.classifier.lines.linesMatrix[i][j] == 1 then
+					 
+						local startX = classif.classifier.lines.lines[i][1][1]
+						local startY = classif.classifier.lines.lines[i][1][2]
+						local endX = classif.classifier.lines.lines[i][2][1]
+						local endY = classif.classifier.lines.lines[i][2][2]
+						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 3, 200 )
+					end
+				end
 			end
-		
+
+			-- --Draw the classifier's POINT positions 
+			-- if classif.classifier.lastPP.point:storage() ~= nil then 
+
+			-- 	local startX = classif.classifier.lastPP.point[1]
+			-- 	local startY = classif.classifier.lastPP.point[2]
+			-- 	love.graphics.setColor(0,0,255,255)
+			-- 	love.graphics.circle( "fill", x + q* 50 + 7*(startX+ fx-math.ceil(5/2)),  y + f * 60 + 7*(startY + fy-math.ceil(5/2)), 3, 200 )
+			
+			-- end
+
+			for i = 1, classif.classifier.lastPP.pointMatrix:size()[1] do 
+				for j = 1, classif.classifier.lastPP.pointMatrix:size()[2] do 
+					love.graphics.setColor(0,0,255,255)
+					if classif.classifier.lastPP.pointMatrix[i][j] == 1 then 
+						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 3, 200 )
+					end
+
+				end
+
+			end
+
+
 		end
 
 	end
