@@ -18,8 +18,8 @@ end
 function love.load()
 
 --Initialize the ninedot problem here. 
-	local n = 1
-	local k = 1
+	local n = 2
+	local k = 2
 	local b = 3 
 	--First start 
 	nd = hfes.ninedot(n,k,b)
@@ -84,7 +84,7 @@ function love.update(dt)
 		-- 	plPretty.dump(d.classifiers)
 		-- end
 
-		d:deleteClassifiers(100)
+		d:deleteClassifiers(2000)
 
 		d:resetBoardState()
 		--Start of game 
@@ -391,8 +391,6 @@ for i = 1 ,#d.rollouts do
 		--print(d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate)
 
 	end
-
-
 
 end
 

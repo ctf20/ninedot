@@ -26,7 +26,7 @@ function EClassifier:setValue(value)
 		self.valueHistory = torch.Tensor({value})  
 	end
 	--Fitness is always chanegd by a new value so we should recalculate it here. 
-	self:calcFitness()
+	--self:calcFitness()
 
 	
 end
@@ -58,7 +58,7 @@ function EClassifier:calcFitnessXCS()
 	else
 		fit = self.fitness + BETA*(self.relativeAccuracy - self.fitness)
 	end
-	
+--	print("acc = " .. self.relativeAccuracy )
 	self.fitness = fit 
 
 	return fit 

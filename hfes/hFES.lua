@@ -132,8 +132,8 @@ function hFES:deleteClassifiers(pop_max)
 
 	while self.numClassifiers > pop_max do 
 
-		self:deleteWorstClassifier(pop_max)
-		  --self:deleteXCS(pop_max)
+		--self:deleteWorstClassifier(pop_max)
+		self:deleteXCS(pop_max)
 	end
 
 end
@@ -211,7 +211,7 @@ end
 function hFES:updateValues()
 
 	local DISCOUNT = 0.0 
-	local ERROR_THRESHOLD = 0.001
+	local ERROR_THRESHOLD = 0.01
 	local values = {}
 	for i = 1, #self.rollouts do 
 		local v = 0 
@@ -221,7 +221,7 @@ function hFES:updateValues()
 		end
 		table.insert(values, v)
 	end
-	local alpha = 0.05
+	local alpha = 0.001
 	local val = 0 
 	for i = 1, #self.rollouts do 
 		local totalAccuracy = 0 
@@ -243,26 +243,30 @@ function hFES:updateValues()
 			
 
 			--XCS TYPE FITNESS CALCULATION HERE... NEED TO CHECK 
-			-- --Update accuracies and relative accuracies.***************
-			-- self.classifiers[self.rollouts[i].activeClassifiers[j]].error = math.sqrt(math.pow(self.rollouts[i].reward + DISCOUNT*val - values[i], 2))
-			-- if self.classifiers[self.rollouts[i].activeClassifiers[j]].error > ERROR_THRESHOLD then 
-			-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy = math.exp(math.log(0.1)*( (self.classifiers[self.rollouts[i].activeClassifiers[j]].error-ERROR_THRESHOLD)/ERROR_THRESHOLD))
-			-- 	print("ERROR > THRESHOLD **********accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
-			-- else
-			-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy = 1 
-			-- 	totalAccuracy = totalAccuracy + self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy 
-			-- 	print("ERROR < THRESHOLD accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
-			-- end
-			-- --Update accuracies and relative accuracies.***************
+			--Update accuracies and relative accuracies.***************
+			self.classifiers[self.rollouts[i].activeClassifiers[j]].error = math.sqrt(math.pow(self.rollouts[i].reward + DISCOUNT*val - values[i], 2))
+			if self.classifiers[self.rollouts[i].activeClassifiers[j]].error > ERROR_THRESHOLD then 
+				self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy = math.exp(math.log(0.1)*( (self.classifiers[self.rollouts[i].activeClassifiers[j]].error-ERROR_THRESHOLD)/ERROR_THRESHOLD))
+				totalAccuracy = totalAccuracy + self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy 
+				--print("ERROR > THRESHOLD **********accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
+			else
+				self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy = 1 
+				totalAccuracy = totalAccuracy + self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy 
+				--print("ERROR < THRESHOLD accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
+			end
+			--Update accuracies and relative accuracies.***************
 
 		end
 		--XCS TYPE FITNESS CALCULATION HERE... NEED TO CHECK 
-		-- --START: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
-		-- for j = 1, #self.rollouts[i].activeClassifiers do 
-		-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy = self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy/totalAccuracy
-		-- 	self.classifiers[self.rollouts[i].activeClassifiers[j]]:calcFitnessXCS()
-		-- end
-		-- --END: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
+		--START: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
+		for j = 1, #self.rollouts[i].activeClassifiers do 
+			--print("accuracy = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
+			--print("total accuracy  = " .. totalAccuracy)
+			
+			self.classifiers[self.rollouts[i].activeClassifiers[j]].relativeAccuracy = self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy/totalAccuracy
+			self.classifiers[self.rollouts[i].activeClassifiers[j]]:calcFitnessXCS()
+		end
+		--END: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
 
 	end
 
