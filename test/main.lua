@@ -317,16 +317,13 @@ if #foveationsBig > 0 then
 				end
 
 			end
-
+			local fovCols = math.ceil(math.sqrt(classif.classifier.lines.linesMatrix:size()[1]))
 			for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
 				for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
 					love.graphics.setColor(0,0,255,255)
 					if classif.classifier.lines.linesMatrix[i][j] == 1 then
-					 
-						local startX = classif.classifier.lines.lines[i][1][1]
-						local startY = classif.classifier.lines.lines[i][1][2]
-						local endX = classif.classifier.lines.lines[i][2][1]
-						local endY = classif.classifier.lines.lines[i][2][2]
+						local startX, startY = util.unconvertCoords(i,fovCols)
+						local endX, endY = util.unconvertCoords(j,fovCols)
 						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 3, 200 )
 					end
 				end

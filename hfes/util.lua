@@ -123,6 +123,13 @@ function util.convertCoords(x,y,cols)
   return ((x-1) * cols) + y
 end
 
+function util.unconvertCoords(i,cols)
+  local x = math.ceil(i/cols)-1
+  local y = i - x
+  return x,y
+end
+
+
 function util.convertPointToMatrix(point,rows,columns)
   -- print("r/c:")
   -- print(rows)
