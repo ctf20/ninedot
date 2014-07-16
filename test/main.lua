@@ -287,44 +287,57 @@ if #foveationsBig > 0 then
 
 
 			--Draw the classifier's line positions 
-			if classif.classifier.lines.lines:storage() ~= nil then 
-				--print("NUM LINES88")
-				local num_lines = classif.classifier.lines.lines:size()[1]
+			--if classif.classifier.lines.lines:storage() ~= nil then 
+			-- 	--print("NUM LINES88")
+			-- 	local num_lines = classif.classifier.lines.lines:size()[1]
 
-				love.graphics.setLineWidth( 2 )
-				love.graphics.setColor(255,100,50,255)
-				if num_lines > 0 then 
-					--print("DRAWING CLASSIFIER LINE ************** > 1")
+			-- 	love.graphics.setLineWidth( 2 )
+			-- 	love.graphics.setColor(255,100,50,255)
+			-- 	if num_lines > 0 then 
+			-- 		--print("DRAWING CLASSIFIER LINE ************** > 1")
 
-					for i = 1, num_lines-1 do 
-						local startX = classif.classifier.lines.lines[i][1][1]
-						local startY = classif.classifier.lines.lines[i][1][2]
-						local endX = classif.classifier.lines.lines[i][2][1]
-						local endY = classif.classifier.lines.lines[i][2][2]
-						love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
+			-- 		for i = 1, num_lines-1 do 
+			-- 			local startX = classif.classifier.lines.lines[i][1][1]
+			-- 			local startY = classif.classifier.lines.lines[i][1][2]
+			-- 			local endX = classif.classifier.lines.lines[i][2][1]
+			-- 			local endY = classif.classifier.lines.lines[i][2][2]
+			-- 			love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
 
-					end	
+			-- 		end	
 				
-				-- elseif num_lines == 1 then  
-				-- 		startX = classif.classifier.lines.lines[1][1][1]
-				-- 		startY = classif.classifier.lines.lines[1][1][2]
+			-- 	-- elseif num_lines == 1 then  
+			-- 	-- 		startX = classif.classifier.lines.lines[1][1][1]
+			-- 	-- 		startY = classif.classifier.lines.lines[1][1][2]
 
-				-- 	--Draw the start pen position 
-				-- 	print("DRAWING CLASSIFIER LINE **************  1")
-				-- 	love.graphics.setColor(255,0,50,255)
-				-- 	love.graphics.circle( "fill", x + q* 50 + 7 * (startX + fx-math.ceil(5/2)),y + f* 60 + 7 * (startY + fy-math.ceil(5/2)), 2, 200 )
+			-- 	-- 	--Draw the start pen position 
+			-- 	-- 	print("DRAWING CLASSIFIER LINE **************  1")
+			-- 	-- 	love.graphics.setColor(255,0,50,255)
+			-- 	-- 	love.graphics.circle( "fill", x + q* 50 + 7 * (startX + fx-math.ceil(5/2)),y + f* 60 + 7 * (startY + fy-math.ceil(5/2)), 2, 200 )
 					
-				end
+			-- 	end
 
-			end
+			-- end
+
+			love.graphics.setLineWidth( 2 )
+			love.graphics.setColor(255,100,50,255)
+			--love.graphics.setColor(255,0,50,255)
 			local fovCols = math.ceil(math.sqrt(classif.classifier.lines.linesMatrix:size()[1]))
+			--print("length = " .. fovCols)
 			for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
 				for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
-					love.graphics.setColor(0,0,255,255)
+					
 					if classif.classifier.lines.linesMatrix[i][j] == 1 then
 						local startX, startY = util.unconvertCoords(i,fovCols)
 						local endX, endY = util.unconvertCoords(j,fovCols)
-						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 3, 200 )
+
+						print("line position = " .. i .. " " .. j )
+						print("start x = " .. startX)
+						print("start y = " .. startY)
+						print("end x = " .. endX)						
+						print("end y = " .. endY)
+
+						love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
+
 					end
 				end
 			end

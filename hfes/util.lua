@@ -124,8 +124,8 @@ function util.convertCoords(x,y,cols)
 end
 
 function util.unconvertCoords(i,cols)
-  local x = math.ceil(i/cols)-1
-  local y = i - x
+  local x = math.ceil(i/cols)
+  local y = (i-1)%(cols) +1
   return x,y
 end
 
