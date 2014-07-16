@@ -69,9 +69,11 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 		local pop = self.rollouts[r].activeClassifiers 
 
 		for num_tournaments = 1, MAX_TOURNAMENTS do
-			--Choose two classifiers at random 
-			local a = self.classifiers[pop[math.random(1, #pop)]]
-			local b = self.classifiers[pop[math.random(1,#pop)]]
+			--Choose two classifiers at random
+			local a_id = pop[math.random(1, #pop)]
+			local b_id = pop[math.random(1, #pop)]
+			local a = self.classifiers[a_id]
+			local b = self.classifiers[b_id]
 
 			--Only replicate if both are beyond a certain age. 
 			if a.valueHistory:storage():size() < 5 or b.valueHistory:storage():size() < 5 then 
@@ -96,16 +98,41 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 
 			if fita > fitb then 
 				winner = a
+				winner_id = a_id
 				loser = b
+				loser_id = b_id
 			else
 				loser = a
+				loser_id = a_id
 				winner = b
+				winner_id = b_id
 			end
 
 			--Winner will be replicated 
 			local child = winner:replicate()
-			--And mutated 
-			child:mutate()
+			--And mutated
+			-- get specific foveation windows for winner
+			local fIds = self.rollouts[r].classifiersToWindows[winner_id]
+			-- plPretty.dump(self.rollouts[r].classifiersToWindows)
+			-- for k,v in pairs(self.rollouts[r].classifiersToWindows) do
+			-- 	print(k)
+			-- end
+			-- print("fIds:**********************************************************************8")
+			-- plPretty.dump(fIds)
+			-- print("winner:",winner)
+			local windows = {}
+			for i,id in ipairs(fIds) do
+				table.insert(windows,self.rollouts[r].foveationWindows[id])
+			end
+			child:mutate(windows)
+			print("parent:")
+			plPretty.dump(winner.classifier.grid.grid)
+			plPretty.dump(winner.classifier.lastPP.pointMatrix)
+			print("child:")
+			plPretty.dump(child.classifier.grid.grid)
+			plPretty.dump(child.classifier.lastPP.pointMatrix)
+			print("window")
+			plPretty.dump(windows[1].dots)
 			--And must now be injected into the self.classifiers data structure. 
 			--table.insert(self.classifiers,child)
 			--If self.classifers > LIMIT then remove the worst classifier. 

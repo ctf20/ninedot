@@ -51,3 +51,9 @@ end
 function PointClassifierTwo:mutateSpecificMatrixRandomly(p)
 	self.numHashes = self:mutateMatrixRandomly(self.pointMatrix,p)
 end
+
+function PointClassifierTwo:mutateOperation(foveationWindows,p)
+	self:mutateSpecificMatrixRandomly(p)
+	local window = self:chooseWindow(foveationWindows)
+	self:mutateMatrixLamarckian(self.pointMatrix,window.pointMatrix,p)
+end

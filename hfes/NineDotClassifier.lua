@@ -53,10 +53,10 @@ function NineDotClassifier:createBinaryClassifier()
 	return util.getConvertedIntTable(t)
 end
 
-function NineDotClassifier:mutate(p)
+function NineDotClassifier:mutate(foveationWindows,p)
 	for i,mod in ipairs({self.grid,self.lines,self.lastPP}) do
-		--print("print i:" .. i)
-		mod:mutateSpecificMatrixRandomly(p)
+		print("print i:" .. i)
+		mod:mutateOperation(foveationWindows,p)
 	end
 	self.binaryClassifier = self:createBinaryClassifier()
 end

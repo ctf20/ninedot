@@ -64,3 +64,9 @@ end
 function LineClassifierTwo:mutateSpecificMatrixRandomly(p)
 	self.numHashes = self:mutateMatrixRandomly(self.linesMatrix,p)
 end
+
+function LineClassifierTwo:mutateOperation(foveationWindows,p)
+	self:mutateSpecificMatrixRandomly(p)
+	local window = self:chooseWindow(foveationWindows)
+	self:mutateMatrixLamarckian(self.linesMatrix,window.linesMatrix,p)
+end

@@ -1,4 +1,5 @@
 local GridClassifier,parent = torch.class('hfes.GridClassifier','hfes.ClassifierModule')
+local plPretty = require 'pl.pretty'
 
 function GridClassifier:__init(grid)
 	parent.__init(self)
@@ -38,6 +39,12 @@ function GridClassifier:mutateSpecificMatrixRandomly(p)
 	-- print(self.grid)
 	-- print(self.grid:storage():size())
 	self.numHashes = self:mutateMatrixRandomly(self.grid,p)
+end
+
+function GridClassifier:mutateOperation(foveationWindows,p)
+	self:mutateSpecificMatrixRandomly(p)
+	local window = self:chooseWindow(foveationWindows)
+	self:mutateMatrixLamarckian(self.grid,window.dots,p)
 end
 
 function GridClassifier:duplicate()

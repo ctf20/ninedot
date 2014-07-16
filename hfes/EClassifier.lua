@@ -99,6 +99,6 @@ function EClassifier:duplicate()
 	return clone 
 end
 
-function EClassifier:mutate(p)
-	self.classifier:mutate(p)
+function EClassifier:mutate(foveationWindows,p)
+	self.classifier:mutate(foveationWindows,p)
 end
