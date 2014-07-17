@@ -15,7 +15,7 @@ function hFES:__init(problem)
 	self.numClassifiers = 0
 	self.classifierIdHash = 0
 	self.rollouts = {} --Stores the set of active classifiers
-	self.pop_max = 10000
+	self.pop_max = 5000
 	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 
@@ -213,7 +213,8 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 end
 
 function hFES:deleteClassifier()
-	local deleteIndex = self:deleteXCS(self.pop_max)
+	local deleteIndex = self:deleteLowestFitClassifier(self.pop_max)
+--	local deleteIndex = self:deleteXCS(self.pop_max)
 	self.numClassifiers = self.numClassifiers - 1
 	return deleteIndex
 end
@@ -299,7 +300,6 @@ end
 function hFES:deleteLowestFitClassifier(pop_max) 
 	--print("HERe2")
 	--print(self.classifiers)
-	if self.numClassifiers > pop_max then 
 		local worstClassifierFitness = 10000000
 		local worstClassifier = -1 
 		for k,v in pairs(self.classifiers) do 
@@ -312,10 +312,8 @@ function hFES:deleteLowestFitClassifier(pop_max)
 		--Delete it here
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
 		self.classifiers[worstClassifier] = nil 
-		self.numClassifiers = self.numClassifiers - 1
-	
-	end
-
+		--self.numClassifiers = self.numClassifiers - 1
+		return worstClassifier
 end
 
 function hFES:deleteLowestWeightMagClassifier(pop_max) 
@@ -542,6 +540,7 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
 				self:createClassifier(#foveationSet, foveationWindow,1.0, score)
+				print("Creating classifier. Score = " .. score)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -646,7 +645,7 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	newClassifier:setValue(score/numPositions)
 	newClassifier.matchSetEstimate = 1
 	--newClassifier:setValue(0)
-	self.numClassifiers = self.numClassifiers + 1
+	--self.numClassifiers = self.numClassifiers + 1
 	self.classifierIdHash = insertIndex
 	self.classifiers[insertIndex] = newClassifier
 	foveationWindow.matchings={insertIndex}
