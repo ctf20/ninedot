@@ -144,7 +144,7 @@ end
 	-- Draw the board
 	for i = 1, nd.boardSize do 
 		for j = 1, nd.boardSize do 
-			if stuffToDraw.dots[i][j] == 0 then 
+			if stuffToDraw.dots[i][j] == -1 then 
 				 love.graphics.circle( "fill", x + 50 * i, y + 50*j , 1, 10 )
 			else
 				 love.graphics.circle( "fill", x + 50 * i, y + 50*j , 5, 100 )
@@ -231,7 +231,7 @@ if #foveationsBig > 0 then
 		--print ("fx = " .. fx .. " fy = ".. fy)
 		for i = 1, 5 do 
 			for j = 1, 5 do 
-				if foveationsBig[f].foveationWindows[1].dots[i][j] == 0 then 
+				if foveationsBig[f].foveationWindows[1].dots[i][j] == -1 then 
 					 love.graphics.circle( "fill", x  + 7 * (i + fx-math.ceil(5/2)) , y + f*60 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
 				else
 					 love.graphics.circle( "fill", x + 7 * (i + fx-math.ceil(5/2)), y + f*60 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
@@ -297,7 +297,7 @@ if #foveationsBig > 0 then
 			--Draw this classifier's dot matchings 
 			for i = 1, 5 do 
 				for j = 1, 5 do 
-					if classif.classifier.grid.grid[i][j] == 0 then 
+					if classif.classifier.grid.grid[i][j] == -1 then 
 						 love.graphics.circle( "fill", x  + q* 50  + 7 * (i + fx-math.ceil(5/2)) , y + f*70 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
 					elseif classif.classifier.grid.grid[i][j] == 1 then 
 						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*70 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )

@@ -17,8 +17,8 @@ function ClassifierModule:mutateMatrixRandomly(matrix,p)
 	local p = p or (1/(matrix:storage():size()*1.0))
 	--p = 0.1 --A High rate of adding hashes to matrices, i.e. promoting generality is enforced. 
 	for i=1,matrix:storage():size() do
-		if matrix:storage()[i] ~= -1 and math.random() < p then
-			matrix:storage()[i] = -1
+		if matrix:storage()[i] ~= 0 and math.random() < p then
+			matrix:storage()[i] = 0
 			self.numHashes = self.numHashes + 1
 		end
 				
@@ -30,7 +30,7 @@ function ClassifierModule:mutateMatrixLamarckian(matrix,matchingMatrix,p)
 	local p = p or (1/(matrix:storage():size()*1.0))
 	--p = 0.0
 	for i=1,matrix:storage():size() do
-		if matrix:storage()[i]  == -1 and math.random() < p then
+		if matrix:storage()[i]  == 0 and math.random() < p then
 			matrix:storage()[i] = self:getLamarckianElement(matchingMatrix,i)
 			self.numHashes = self.numHashes - 1
 		end

@@ -15,7 +15,7 @@ function hFES:__init(problem)
 	self.numClassifiers = 0
 	self.classifierIdHash = 0
 	self.rollouts = {} --Stores the set of active classifiers
-	self.pop_max = 4000
+	self.pop_max = 10000
 	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 

@@ -102,7 +102,7 @@ function util.convertPPVecToMatrix(ppVec,rows,columns)
   -- print("r/c:")
   -- print(rows)
   -- print(columns)
-  local matrix = torch.Tensor(rows*columns,rows*columns):fill(0)
+  local matrix = torch.Tensor(rows*columns,rows*columns):fill(-1)
   if ppVec:storage() ~= nil then
     for i=1,ppVec:size()[1] do
       local line = ppVec[i]
@@ -134,7 +134,7 @@ function util.convertPointToMatrix(point,rows,columns)
   -- print("r/c:")
   -- print(rows)
   -- print(columns)
-  local matrix = torch.Tensor(rows,columns):fill(0)
+  local matrix = torch.Tensor(rows,columns):fill(-1)
   if point:storage() ~= nil then
       matrix[point[1]][point[2]] = 1
   end

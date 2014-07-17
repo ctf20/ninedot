@@ -17,18 +17,18 @@ function ninedot:__init(N, K, boardSize)
 	for i = 1, self.boardSize do 
 		self.bs.dots[i] = {}
 		for j = 1, self.boardSize do 
-			self.bs.dots[i][j] = 0 
+			self.bs.dots[i][j] = -1 
 		end
 	end
 	--print(self.bs.dots)
 
 	-- create tensor board
-	self.tBoard = torch.Tensor(self.boardSize,self.boardSize):fill(0)
+	self.tBoard = torch.Tensor(self.boardSize,self.boardSize):fill(-1)
 	self.boardDiag = math.ceil(math.sqrt(self.boardSize^2+self.boardSize^2))
 	if self.boardDiag % 2 == 0 then
 		self.boardDiag = self.boardDiag + 1
 	end
-	self.pseudoTBoard = torch.Tensor(3*self.boardDiag,3*self.boardDiag):fill(0)
+	self.pseudoTBoard = torch.Tensor(3*self.boardDiag,3*self.boardDiag):fill(-1)
 	self.pseudoWidth = self.boardDiag*3 / 2
 	self.largeBoardWidth = 3*self.boardDiag
 
@@ -42,7 +42,7 @@ function ninedot:__init(N, K, boardSize)
 		-- local y = math.random(1, self.boardSize)
 		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
 		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		if self.bs.dots[x][y] == 0 then 
+		if self.bs.dots[x][y] == -1 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1
 			table.insert(self.bs.dotsCords,{x,y})
@@ -85,19 +85,19 @@ function ninedot:resetBoardState()
 	for i = 1, self.boardSize do 
 		self.bs.dots[i] = {}
 		for j = 1, self.boardSize do 
-			self.bs.dots[i][j] = 0 
+			self.bs.dots[i][j] = -1
 		end
 	end
 	--print(self.bs.dots)
 
 	-- create tensor board
-	self.tBoard = torch.Tensor(self.boardSize,self.boardSize):fill(0)
+	self.tBoard = torch.Tensor(self.boardSize,self.boardSize):fill(-1)
 	self.boardDiag = math.ceil(math.sqrt(self.boardSize^2+self.boardSize^2))
 	if self.boardDiag % 2 == 0 then
 		self.boardDiag = self.boardDiag + 1
 	end
 	self.largeBoardWidth = 3*self.boardDiag
-	self.pseudoTBoard = torch.Tensor(self.largeBoardWidth,self.largeBoardWidth):fill(0)
+	self.pseudoTBoard = torch.Tensor(self.largeBoardWidth,self.largeBoardWidth):fill(-1)
 	-- Create k random dots 
 	local num_dots_made = 0
 	while num_dots_made < self.n do
@@ -106,7 +106,7 @@ function ninedot:resetBoardState()
 		--local y = math.random(1, self.boardSize)
 		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
 		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		if self.bs.dots[x][y] == 0 then 
+		if self.bs.dots[x][y] == -1 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1
 			table.insert(self.bs.dotsCords,{x,y})
@@ -389,16 +389,6 @@ function ninedot:getFoveationSet()
 		local relCenter = self:getLargeBoardCoordinates(center)
 		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
 		for j,size in ipairs({{5,5}}) do
-			-- print("center:")
-			-- print(center)
-			-- print("relCenter")
-			-- print(relCenter)
-			local x = self.tBoard:clone()
-			x[center[1]][center[2]] = 9
-			-- print(x)
-			-- local k = self.pseudoTBoard:clone()
-			-- k[relCenter[1]][relCenter[2]] = 9
-			-- print(k)
 			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
 			-- print(foveationWindow.dots)
 			foveationWindow.lines,foveationWindow.linesMatrix = self:extractLinesInLargeWindow(foveationWindow,lPPS,size[1],size[2])
@@ -497,12 +487,15 @@ function ninedot:getInputVector(window)
 	for _,structure in ipairs({window.dots,window.linesMatrix,window.pointMatrix}) do 
 		for i = 1, structure:size()[1] do
 			for j = 1, structure:size()[2] do
-				if structure[i][j] == 1 then 
-					table.insert(inputV,1)
-				end
-				if structure[i][j] == 0 then 
-					table.insert(inputV,-1)
-				end		
+
+				table.insert(inputV, structure[i][j])
+				
+				-- if structure[i][j] == 1 then 
+				-- 	table.insert(inputV,1)
+				-- end
+				-- if structure[i][j] == 0 then 
+				-- 	table.insert(inputV,-1)
+				-- end		
 			end
 		end
 	end

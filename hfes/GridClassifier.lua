@@ -26,7 +26,7 @@ function GridClassifier:createCover(dots,specificity)
 	local dotsTemplate = dots:clone()
 	for i=1,#dotsTemplate:storage() do
 		if math.random() > specificity then
-			dotsTemplate:storage()[i] = -1
+			dotsTemplate:storage()[i] = 0 -- -1
 			self.numHashes = self.numHashes + 1
 		end
 	end

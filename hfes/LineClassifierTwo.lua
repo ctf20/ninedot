@@ -27,7 +27,7 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 			if math.random() > specificity then
 				local from = util.convertCoords(startX,startY,windowCols)
       			local to = util.convertCoords(endX,endY,windowCols)
-      			linesMatrix[from][to] = -1
+      			linesMatrix[from][to] = 0 -- -1
       			self.numHashes = self.numHashes + 1
 			else
 				-- print("insert")
@@ -42,8 +42,8 @@ function LineClassifierTwo:createCover(lines,windowRows,windowCols,specificity)
 	--Set elements in linesMatrix to -1 randomly..
 	for i=1,linesMatrix:storage():size() do 
 		if math.random() > specificity then
-			if linesMatrix:storage()[i] == 0 then 
-				linesMatrix:storage()[i] = -1
+			if linesMatrix:storage()[i] == -1 then -- 0 then 
+				linesMatrix:storage()[i] = 0 -- -1
 				self.numHashes = self.numHashes + 1
 			end
 		end

@@ -17,7 +17,7 @@ function PointClassifierTwo:createCover(point,windowRows,windowCols,specificity)
 	self.point = torch.Tensor({})
 	if point:storage() ~= nil then --go through each line. 
 		if math.random() > specificity then
-  			pointMatrix[point[1]][point[2]] = -1
+  			pointMatrix[point[1]][point[2]] = 0 -- -1
   			self.numHashes = self.numHashes + 1
 		else
 			-- print("insert")
@@ -30,8 +30,8 @@ function PointClassifierTwo:createCover(point,windowRows,windowCols,specificity)
 	--Set elements in pointMatrix to -1 randomly..
 	for i=1,pointMatrix:storage():size() do 
 		if math.random() > specificity then
-			if pointMatrix:storage()[i] == 0 then 
-				pointMatrix:storage()[i] = -1
+			if pointMatrix:storage()[i] == -1 then --0 then 
+				pointMatrix:storage()[i] = 0
 				self.numHashes = self.numHashes + 1
 			end
 		end

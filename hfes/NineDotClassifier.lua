@@ -6,6 +6,7 @@ function NineDotClassifier:__init(grid,lines,lastPP)
 	self.grid = grid or hfes.GridClassifier()
 	self.lines = lines or hfes.LineClassifierTwo()
 	self.lastPP = lastPP or hfes.PointClassifierTwo()
+	self.totalSize = 675
 end
 
 function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,specificity)
@@ -51,30 +52,19 @@ end
 
 function NineDotClassifier:createHiddenWeights()
 
-	local hiddenWeights = {}
-	local bias = 0 
+	local hiddenWeights = torch.Tensor(self.totalSize + 1)
+	local count = 1
 	for _,structure in ipairs({self.grid.grid,self.lines.linesMatrix,self.lastPP.pointMatrix}) do 
 		for i = 1, structure:size()[1] do
 			for j = 1, structure:size()[2] do
-				if structure[i][j] == -1 then 
-					table.insert(hiddenWeights,0)
-				end
-				if structure[i][j] == 1 then 
-					table.insert(hiddenWeights,1)
-					bias = bias + 1
-				end
-				if structure[i][j] == 0 then 
-					table.insert(hiddenWeights,-1)
-					bias = bias + 1
-
-				end		
+				hiddenWeights[count] = structure[i][j]
+				count = count + 1
 			end
 		end
 	end
-	table.insert(hiddenWeights, -(bias-0.5))
+	bias = -(torch.sum(torch.pow(hiddenWeights,2))-0.5)
+	hiddenWeights[self.totalSize + 1] = bias
 	
-	hiddenWeights = torch.Tensor(hiddenWeights)
-
 	return hiddenWeights 
 
 end
