@@ -65,7 +65,7 @@ end
 
 function NineDotClassifier:mutate(foveationWindows,p)
 	for i,mod in ipairs({self.grid,self.lines,self.lastPP}) do
-		print("print i:" .. i)
+		--print("print i:" .. i)
 		mod:mutateOperation(foveationWindows,p)
 	end
 

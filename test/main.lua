@@ -6,8 +6,14 @@ local plPretty = require 'pl.pretty'
 --math.randomseed( os.time() )
 
 local historyScore = {}
+local historyFitness = {}
+local historyHashes = {}
+local historyVHL = {} --Value history length 
+local historyMSS = {} --Actual Match set size 
+
 local historyGameScore = {}
 local historyGameScoreSlide = {}
+local numGames = 0 
 
 function delay_s(delay)
   delay = delay or 1
@@ -18,8 +24,8 @@ end
 function love.load()
 
 --Initialize the ninedot problem here. 
-	local n = 1
-	local k = 1
+	local n = 2
+	local k = 2
 	local b = 3 
 	--First start 
 	nd = hfes.ninedot(n,k,b)
@@ -59,7 +65,7 @@ function love.update(dt)
 		for h = 1, #d.rollouts do 
 			gameScore = gameScore + d.rollouts[h].reward
 		end
-		print("Game score = " .. gameScore)
+		--print("Game score = " .. gameScore)
 		table.insert(historyGameScore, gameScore)
 		if #historyGameScoreSlide == 0 then 
 			table.insert(historyGameScoreSlide, 1)
@@ -84,11 +90,11 @@ function love.update(dt)
 		-- 	plPretty.dump(d.classifiers)
 		-- end
 
-		d:deleteClassifiers(100)
+		d:deleteClassifiers(2000)
 
 		d:resetBoardState()
 		--Start of game 
-
+		numGames = numGames + 1
 		step = 1 
 	end
 
@@ -102,7 +108,8 @@ end
 
 function love.draw()
 --delay_s(1)
- 
+if numGames%1 == 0 then 
+
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
 stuffToDrawBigX = stuffToDrawBig[1] 
@@ -199,10 +206,11 @@ end
 	-- 	end
 	-- end
 
-
 --Analysis parts of the visualization 
    if love.keyboard.isDown("up") then
+      delay_s(2)
       print("Key pressed")
+
    end
 -----------------------------------------------------------------------------
 -- Print all the foveation windows on the right of the screen. 
@@ -249,6 +257,10 @@ love.graphics.print("No Classifiers: " .. d.numClassifiers, 500, 10)
 
 if #foveationsBig > 0 then
 	local histSc = {}
+	local fitness = {}
+	local hashes = {}
+	local VHL = {}
+	local MSS = {}
 
 
 	for f = 1, #foveationsBig do --Go through each foveation position 
@@ -262,8 +274,8 @@ if #foveationsBig > 0 then
 		--print("number of classifiers matching in foveationPosition " .. f .. " = " .. #foveationsBig[f].foveationWindows[1].matchings)
 
 		--Sort classifiers by WEIGHT 
-		table.sort(foveationsBig[f].foveationWindows[1].matchings, function (a,b) return (classifiers[a].weight > classifiers[b].weight) end )
-
+		table.sort(foveationsBig[f].foveationWindows[1].matchings, function (a,b) return (classifiers[a].fitness > classifiers[b].fitness) end )
+		table.insert(MSS, #foveationsBig[f].foveationWindows[1].matchings )
 		for q = 1, #foveationsBig[f].foveationWindows[1].matchings do 
 
 			if q%10 == 0 then 
@@ -276,18 +288,22 @@ if #foveationsBig > 0 then
 
 			local classif = classifiers[foveationsBig[f].foveationWindows[1].matchings[q]]
 			--print(classif.classifier.grid)
-			love.graphics.print(string.format("%.4f", classif.weight), x  + q* 50 , y + f*60 + 40)
+			love.graphics.print(string.format("%.4f", classif.weight), x  + q* 50 , y + f*70 + 40)
 			table.insert(histSc, classif.weight)
+			table.insert(fitness, classif.fitness)
+			table.insert(hashes, classif.totalHashes)
+			table.insert(VHL, classif.valueHistory:storage():size())
+			
 			--Draw this classifier's dot matchings 
 			for i = 1, 5 do 
 				for j = 1, 5 do 
 					if classif.classifier.grid.grid[i][j] == 0 then 
-						 love.graphics.circle( "fill", x  + q* 50  + 7 * (i + fx-math.ceil(5/2)) , y + f*60 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
+						 love.graphics.circle( "fill", x  + q* 50  + 7 * (i + fx-math.ceil(5/2)) , y + f*70 + 7*(j + fy-math.ceil(5/2)) , 1, 100 )
 					elseif classif.classifier.grid.grid[i][j] == 1 then 
-						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*60 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
+						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*70 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
 					else
  						 love.graphics.setColor(0,100,100,100)
-						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*60 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
+						 love.graphics.circle( "fill", x +  q* 50  + 7 * (i + fx-math.ceil(5/2)), y + f*70 + 7*(j + fy-math.ceil(5/2)) , 3, 255 )
 	 					 love.graphics.setColor(0,255,255,255)
 					end
 				end
@@ -326,29 +342,29 @@ if #foveationsBig > 0 then
 
 			-- end
 
-			-- love.graphics.setLineWidth( 2 )
-			-- love.graphics.setColor(255,100,50,255)
-			-- --love.graphics.setColor(255,0,50,255)
-			-- local fovCols = math.ceil(math.sqrt(classif.classifier.lines.linesMatrix:size()[1]))
-			-- --print("length = " .. fovCols)
-			-- for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
-			-- 	for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
+			love.graphics.setLineWidth( 2 )
+			love.graphics.setColor(255,255,255,255)
+			--love.graphics.setColor(255,0,50,255)
+			local fovCols = math.ceil(math.sqrt(classif.classifier.lines.linesMatrix:size()[1]))
+			--print("length = " .. fovCols)
+			for i = 1, classif.classifier.lines.linesMatrix:size()[1] do 
+				for j = 1, classif.classifier.lines.linesMatrix:size()[2] do 
 					
-			-- 		if classif.classifier.lines.linesMatrix[i][j] == 1 then
-			-- 			local startX, startY = util.unconvertCoords(i,fovCols)
-			-- 			local endX, endY = util.unconvertCoords(j,fovCols)
+					if classif.classifier.lines.linesMatrix[i][j] == 1 then
+						local startX, startY = util.unconvertCoords(i,fovCols)
+						local endX, endY = util.unconvertCoords(j,fovCols)
 
-			-- 			print("line position = " .. i .. " " .. j )
-			-- 			print("start x = " .. startX)
-			-- 			print("start y = " .. startY)
-			-- 			print("end x = " .. endX)						
-			-- 			print("end y = " .. endY)
+						-- print("line position = " .. i .. " " .. j )
+						-- print("start x = " .. startX)
+						-- print("start y = " .. startY)
+						-- print("end x = " .. endX)						
+						-- print("end y = " .. endY)
 
-			-- 			love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 60 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 60 + 7 * (endY + fy-math.ceil(5/2)) )
+						love.graphics.line(x +  q* 50 + 7 * (startX + fx-math.ceil(5/2)) ,y +  f* 70 + 7 * (startY+ fy-math.ceil(5/2)) , x +  q* 50 + 7 * (endX + fx-math.ceil(5/2)) , y +  f* 70 + 7 * (endY + fy-math.ceil(5/2)) )
 
-			-- 		end
-			-- 	end
-			-- end
+					end
+				end
+			end
 
 			-- --Draw the classifier's POINT positions 
 			-- if classif.classifier.lastPP.point:storage() ~= nil then 
@@ -365,11 +381,11 @@ if #foveationsBig > 0 then
 				
 					if classif.classifier.lastPP.pointMatrix[i][j] == 1 then 
 						love.graphics.setColor(0,0,255,255)
-						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 5, 200 )
+						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 70 + 7*(j + fy-math.ceil(5/2)), 5, 200 )
 					end
 					if classif.classifier.lastPP.pointMatrix[i][j] == 0 then
-						love.graphics.setColor(255,0,0,255) 
-						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 60 + 7*(j + fy-math.ceil(5/2)), 3, 200 )
+						love.graphics.setColor(100,20,0,255) 
+						love.graphics.circle( "fill", x + q* 50 + 7*(i+ fx-math.ceil(5/2)),  y + f * 70 + 7*(j + fy-math.ceil(5/2)), 2, 20)
 					end
 
 				end
@@ -381,8 +397,14 @@ if #foveationsBig > 0 then
 
 	end
 table.insert(historyScore, histSc)
+table.insert(historyFitness, fitness)
+table.insert(historyHashes, hashes)
+table.insert(historyVHL, VHL)
+table.insert(historyMSS, MSS)
 
 end
+
+--ORANGE - weights of classifiers 
 love.graphics.setColor(255,100,50,255)
 -----DRAW HISTORY OF SCORES
 for i = 1,#historyScore do 
@@ -390,25 +412,81 @@ for i = 1,#historyScore do
 		love.graphics.circle( "fill", i, 10 + 500-100*historyScore[i][j] , 1, 255 )
 	end
 end
-if #historyScore > 500 then 
+if #historyScore > 100 then 
 	historyScore = {}
+end
+
+--GREEN = fitness of classifiers 
+love.graphics.setColor(0,255,100,255)
+-----DRAW HISTORY OF FITNESS
+for i = 1,#historyFitness do 
+	for j = 1, #historyFitness[i] do 
+		--print(historyFitness[i][j])
+		love.graphics.circle( "fill", i, 10 + 500-100*historyFitness[i][j] , 1, 255 )
+	end
+end
+if #historyFitness > 100 then 
+	historyFitness = {}
+end
+
+--BLUE = number of hashes 
+love.graphics.setColor(00,00,255,255)
+-----DRAW HISTORY OF HASHES
+for i = 1,#historyHashes do 
+	for j = 1, #historyHashes[i] do 
+		--print(historyHashes[i][j])
+		love.graphics.circle( "fill", i, 10 + 200-2*historyHashes[i][j] , 1, 255 )
+	end
+end
+if #historyHashes > 100 then 
+	historyHashes = {}
+end
+
+--YELLOW = value history length 
+love.graphics.setColor(255,255,00,255)
+-----DRAW HISTORY OF VALUE HISTORY LENGTH 
+for i = 1,#historyVHL do 
+	for j = 1, #historyVHL[i] do 
+		--print(historyVHL[i][j])
+		love.graphics.circle( "fill", i, 10 + 100-0.5*historyVHL[i][j] , 1, 255 )
+	end
+end
+if #historyVHL > 100 then 
+	historyVHL = {}
+end
+
+--PINK  = REAL MATCH SET SIZE 
+love.graphics.setColor(255,10,255,255)
+-----DRAW HISTORY OF REAL MATCH SET SIZE 
+for i = 1,#historyMSS do 
+	for j = 1, #historyMSS[i] do 
+		--print(historyMSS[i][j])
+		love.graphics.circle( "fill", i, 10 + 270-0.5*historyMSS[i][j] , 1, 255)
+		if historyMSS[i][j] == 1 then 
+			love.graphics.setColor(255,255,255,255)
+			love.graphics.circle( "fill", i, 10 + 270-0.5*historyMSS[i][j] , 2, 255)
+			love.graphics.setColor(255,10,255,255)
+
+		end
+	end
+end
+if #historyMSS > 100 then 
+	historyMSS = {}
 end
 
 ----DRAW HISTORY OF GAME SCORE 
 
-love.graphics.setColor(100,255,50,255)
 -----DRAW HISTORY OF SCORES
 for i = 1,#historyGameScore do 
-		love.graphics.circle( "fill", i*(nd.k+1), 10 + 500-100*historyGameScore[i] , 1, 255 )
-		love.graphics.setColor(100,105,0,255)
-		love.graphics.circle( "fill", i*(nd.k+1), 10 + 500-100*historyGameScoreSlide[i] , 1, 255 )
-		love.graphics.setColor(100,255,50,255)
+		love.graphics.circle( "fill", i*(nd.k+1), 10 + 400-50*historyGameScore[i] , 1, 255 )
+		love.graphics.setColor(100,255,250,255)
+		love.graphics.circle( "fill", i*(nd.k+1), 10 + 400-50*historyGameScoreSlide[i] , 1, 255 )
+		love.graphics.setColor(100/2,255/2,250/2,255)
 
 end
-if #historyGameScore > 500/(nd.k+1) then 
+if #historyGameScore > math.floor(100/(nd.k+1)) then 
 	historyGameScore = {}
 	historyGameScoreSlide = {}
-	
 end
 
 ----VISUALIZE THE PROPERTIES OF THE ROLLOUT 
@@ -419,15 +497,15 @@ for i = 1 ,#d.rollouts do
 		love.graphics.setColor(255,10,255,255)
 
 		--PINK = estimated Match Set Size (also you can see this fromthe number of dots per rollout on the horizontal axis! )
-		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate , 5, 255 )
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*3, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate , 2, 255 )
 		
 		--GREEN = FITNESS (the fitness tends to become very massively negative and explode eventually!!!)
 		love.graphics.setColor(0,255,100,255)
-		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-1000*d.classifiers[d.rollouts[i].activeClassifiers[a]].fitness , 5, 255 )
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*3, 10 + 500-1000*d.classifiers[d.rollouts[i].activeClassifiers[a]].fitness , 2, 255 )
 
 		--YELLOW = length of value history i.e. number of times matched in total. 
 		love.graphics.setColor(255,255,00,255)
-		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].valueHistory:storage():size()  , 5, 255 )
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*3, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].valueHistory:storage():size()  , 2, 255 )
 		
 		--BLUE = number of hashes in this classifier, i.e. its generality 
 		love.graphics.setColor(00,00,255,255)
@@ -437,7 +515,7 @@ for i = 1 ,#d.rollouts do
 		
 		--print(hash ..  " == > " .. d.classifiers[d.rollouts[i].activeClassifiers[a]].totalHashes)
 
-		love.graphics.circle( "fill", 500 + (i-1)*300 + a*10, 10 + 500-5*hash  , 5, 255 )
+		love.graphics.circle( "fill", 500 + (i-1)*300 + a*3, 10 + 300-hash  , 2, 255 )
 		
 		--print(d.classifiers[d.rollouts[i].activeClassifiers[a]].matchSetEstimate)
 
@@ -457,6 +535,6 @@ end
  -- -- let's draw our hero
  -- love.graphics.setColor(255,255,0,255)
  -- love.graphics.rectangle("fill", hero.x,hero.y, 30, 15)
-
+end
 end
 

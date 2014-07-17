@@ -107,7 +107,9 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			-- 	winner = b
 			-- 	winner_id = b_id
 			-- end
-			print("fit a = " .. fita .. "fitb = " .. fitb .. " total hash a = ".. a.totalHashes .. " tot hash b = " .. b.totalHashes)
+			--print("fit a = " .. fita .. "fitb = " .. fitb .. " total hash a = ".. a.totalHashes .. " tot hash b = " .. b.totalHashes)
+			
+			--TOURNAMENT SELECTION IS NOW A MULTI-OBJECTIVE FUNCTION OF FITNESS AND GENERALITY 
 			if ( fita > fitb and a.totalHashes >= b.totalHashes) or ( fita >= fitb and a.totalHashes > b.totalHashes) then 
 				
 				winner = a
@@ -183,13 +185,13 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 end
 
 function hFES:deleteClassifiers(pop_max)
-
 	while self.numClassifiers > pop_max do 
 
-		--self:deleteWorstClassifier(pop_max)
-		self:deleteXCS(pop_max)
+		--self:deleteLowestFitClassifier(pop_max)
+		--self:deleteXCS(pop_max)
+		self:deleteLeastHashes(pop_max)
+		--self:deleteLowestWeightMagClassifier(pop_max)
 	end
-
 end
 
 function hFES:deleteXCS(pop_max) 
@@ -211,12 +213,35 @@ function hFES:deleteXCS(pop_max)
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
 		self.classifiers[worstClassifier] = nil 
 		self.numClassifiers = self.numClassifiers - 1
+	end
+end
+
+
+function hFES:deleteLeastHashes(pop_max) 
+	
+	if self.numClassifiers > pop_max then 
+		local worstClassifierFitness = 10000000
+		local worstClassifier = -1 
+		for k,v in pairs(self.classifiers) do 
+			if self.classifiers[k].totalHashes < worstClassifierFitness then 
+				worstClassifierFitness = self.classifiers[k].totalHashes
+				worstClassifier = k 
+			end
+		end
+		print("deleting classifier with least hashes : " .. worstClassifierFitness)
+
+		--Delete it here
+		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+		self.classifiers[worstClassifier] = nil 
+		self.numClassifiers = self.numClassifiers - 1
 	
 	end
 
 end
 
-function hFES:deleteWorstClassifier(pop_max) 
+
+
+function hFES:deleteLowestFitClassifier(pop_max) 
 	--print("HERe2")
 	--print(self.classifiers)
 	if self.numClassifiers > pop_max then 
@@ -237,6 +262,30 @@ function hFES:deleteWorstClassifier(pop_max)
 	end
 
 end
+
+function hFES:deleteLowestWeightMagClassifier(pop_max) 
+	--print("HERe2")
+	--print(self.classifiers)
+	if self.numClassifiers > pop_max then 
+		local worstClassifierFitness = 10000000000
+		local worstClassifier = -1 
+		for k,v in pairs(self.classifiers) do 
+			w = math.pow(self.classifiers[k].weight,2)
+			if w < worstClassifierFitness then 
+				worstClassifierFitness = w
+				worstClassifier = k 
+			end
+		end
+
+		--Delete it here
+		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+		self.classifiers[worstClassifier] = nil 
+		self.numClassifiers = self.numClassifiers - 1
+	
+	end
+
+end
+
 
 --- Match and Move method FOR TD_learning 
 function hFES:makeMoveTD()
@@ -522,7 +571,7 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	newClassifier.classifier=classifier
 	newClassifier:setTotalHashes()
 	newClassifier:setValue(score/numPositions)
-	newClassifier.matchSetEstimate = 1 
+	newClassifier.matchSetEstimate = 1
 	--newClassifier:setValue(0)
 	self.numClassifiers = self.numClassifiers + 1
 	self.classifierIdHash = self.classifierIdHash + 1

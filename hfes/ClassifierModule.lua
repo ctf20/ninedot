@@ -15,13 +15,12 @@ function ClassifierModule:mutateMatrixRandomly(matrix,p)
 --	print(matrix:storage():size())
 	
 	local p = p or (1/(matrix:storage():size()*1.0))
-	--p = 0.1
+	--p = 0.1 --A High rate of adding hashes to matrices, i.e. promoting generality is enforced. 
 	for i=1,matrix:storage():size() do
 		if matrix:storage()[i] ~= -1 and math.random() < p then
 			matrix:storage()[i] = -1
 			self.numHashes = self.numHashes + 1
 		end
-		--I THINK WE NEED TO ADD INCREASING SPECIFICITY NOW TOO. 
 				
 	end
 	
