@@ -1,12 +1,11 @@
 local NineDotClassifier,parent = torch.class('hfes.NineDotClassifier','hfes.Classifier')
-
+plPretty = require "pl.pretty"
 function NineDotClassifier:__init(grid,lines,lastPP)
 	parent.__init(self)
 	-- print("creating a classifier")
 	self.grid = grid or hfes.GridClassifier()
 	self.lines = lines or hfes.LineClassifierTwo()
 	self.lastPP = lastPP or hfes.PointClassifierTwo()
-	self.binaryClassifier = {}
 end
 
 function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,specificity)
@@ -15,7 +14,7 @@ function NineDotClassifier:buildClassifier(grid,lines,lastPP,foveationWindow,spe
 	-- print(foveationWindow)
 	self.lines:createCover(lines,foveationWindow.rows,foveationWindow.cols,specificity)
 	self.lastPP:createCover(lastPP,foveationWindow.rows,foveationWindow.cols,specificity)
-	self.binaryClassifier = self:createBinaryClassifier()
+	-- self.binaryClassifier = self:createBinaryClassifier()
 	self.hiddenWeights = self:createHiddenWeights()
 
 
@@ -51,56 +50,51 @@ end
 
 
 function NineDotClassifier:createHiddenWeights()
-	local hiddenWeights = {}
-	local longDots = util.flatten(self.grid.grid)
-	local longLinesMatrix = util.flatten(self.lines.linesMatrix)
-	local longPointMatrix = util.flatten(self.lastPP.pointMatrix)
-	local bias = 0 
-	
-	for john,structure in ipairs({longDots,longLinesMatrix,longPointMatrix}) do
-		for i = 1, structure:storage():size() do 
-			if structure:storage()[i] == -1 then 
-				table.insert(hiddenWeights,0)
-			end
-			if structure:storage()[i] == 1 then 
-				table.insert(hiddenWeights,1)
-				bias = bias + 1
-				--print("bias +1 = " .. bias)
-			end
-			if structure:storage()[i] == 0 then 
-				table.insert(hiddenWeights,-1)
-				bias = bias + 1
-				--print("bias -1 = " .. bias)
 
-			end		
+	local hiddenWeights = {}
+	local bias = 0 
+	for _,structure in ipairs({self.grid.grid,self.lines.linesMatrix,self.lastPP.pointMatrix}) do 
+		for i = 1, structure:size()[1] do
+			for j = 1, structure:size()[2] do
+				if structure[i][j] == -1 then 
+					table.insert(hiddenWeights,0)
+				end
+				if structure[i][j] == 1 then 
+					table.insert(hiddenWeights,1)
+					bias = bias + 1
+				end
+				if structure[i][j] == 0 then 
+					table.insert(hiddenWeights,-1)
+					bias = bias + 1
+
+				end		
+			end
 		end
 	end
-
-	--Now add a bias element which is the number of 1's or -1s above - 0.5 
 	table.insert(hiddenWeights, -(bias-0.5))
-
+	
 	hiddenWeights = torch.Tensor(hiddenWeights)
 
-
 	return hiddenWeights 
+
 end
 
-function NineDotClassifier:createBinaryClassifier()
-	local t = {}
-	local longDots = util.flatten(self.grid.grid)
-	local longLinesMatrix = util.flatten(self.lines.linesMatrix)
-	local longPointMatrix = util.flatten(self.lastPP.pointMatrix)
-	for i=1,longDots:storage():size() do
-		table.insert(t,longDots:storage()[i])
-	end
-	for i=1,longLinesMatrix:storage():size() do
-		table.insert(t,longLinesMatrix:storage()[i])
-	end
-	for i=1,longPointMatrix:storage():size() do
-		table.insert(t,longPointMatrix:storage()[i])
-	end
-	return util.getConvertedIntTable(t)
-end
+-- function NineDotClassifier:createBinaryClassifier()
+-- 	local t = {}
+-- 	local longDots = util.flatten(self.grid.grid)
+-- 	local longLinesMatrix = util.flatten(self.lines.linesMatrix)
+-- 	local longPointMatrix = util.flatten(self.lastPP.pointMatrix)
+-- 	for i=1,longDots:storage():size() do
+-- 		table.insert(t,longDots:storage()[i])
+-- 	end
+-- 	for i=1,longLinesMatrix:storage():size() do
+-- 		table.insert(t,longLinesMatrix:storage()[i])
+-- 	end
+-- 	for i=1,longPointMatrix:storage():size() do
+-- 		table.insert(t,longPointMatrix:storage()[i])
+-- 	end
+-- 	return util.getConvertedIntTable(t)
+-- end
 
 function NineDotClassifier:mutate(foveationWindows,p)
 	for i,mod in ipairs({self.grid,self.lines,self.lastPP}) do
@@ -110,8 +104,11 @@ function NineDotClassifier:mutate(foveationWindows,p)
 
 	--HERE
 	
-	self.binaryClassifier = self:createBinaryClassifier()
+	-- self.binaryClassifier = self:createBinaryClassifier()
 	self.hiddenWeights = self:createHiddenWeights()
+	-- print("weights")
+	-- plPretty.dump(self.hiddenWeights)
+
 end
 
 function NineDotClassifier:duplicate()
@@ -119,10 +116,6 @@ function NineDotClassifier:duplicate()
 	clone.grid = self.grid:duplicate()
 	clone.lines = self.lines:duplicate()
 	clone.lastPP = self.lastPP:duplicate()
-	clone.binaryClassifier = {}
-	for i,b in ipairs(self.binaryClassifier) do
-		table.insert(clone.binaryClassifier,b)
-	end
 	clone.hiddenWeights = self.hiddenWeights:clone()
 	return clone
 end

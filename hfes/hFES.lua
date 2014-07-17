@@ -14,17 +14,18 @@ function hFES:__init(problem)
 	-- print("#self.classifiers:" .. #self.classifiers)
 	self.numClassifiers = 0
 	self.classifierIdHash = 0
-	self.rollouts = {} --Stores the set of active classifiers 
-	self.hiddenWeightMatrix = createFixedMatrix()
+	self.rollouts = {} --Stores the set of active classifiers
+	self.pop_max = 4000
+	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 
 end
 
 function hFES:createFixedMatrix() 
 
-	local length = 675 + 1 
-	local NUM_CLASSIFIERS_MAX = 4000 
-	self.hiddenWeightMatrix  = torch.Tensor(NUM_CLASSIFIERS_MAX,length):fill(0)
+	local length = 676
+	self.hiddenWeightMatrix  = torch.Tensor(self.pop_max,length):fill(0)
+	return self.hiddenWeightMatrix
 
 end
 
@@ -197,9 +198,10 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 			-- 	-- holeNumber = self:deleteWorstClassifier(POP_MAX)
 			-- 	self.classifiers[holeNumber] = child
 			-- else
-			self.numClassifiers = self.numClassifiers + 1
-			self.classifierIdHash = self.classifierIdHash + 1
-			self.classifiers[self.classifierIdHash] = child
+			local insertIndex = self:deleteAndGetIndex()
+			self.classifierIdHash = insertIndex
+			self.classifiers[insertIndex] = child
+			self.hiddenWeightMatrix[insertIndex] = child.classifier.hiddenWeights
 			--print("CREATING CHILD ")
 			-- end
 
@@ -210,36 +212,63 @@ function hFES:evolveClassifiers() --Evolve the classifiers!! :)
 
 end
 
+function hFES:deleteClassifier()
+	local deleteIndex = self:deleteXCS(self.pop_max)
+	self.numClassifiers = self.numClassifiers - 1
+	return deleteIndex
+end
+
 function hFES:deleteClassifiers(pop_max)
-	while self.numClassifiers > pop_max do 
+	if self.numClassifiers > pop_max then 
 
 		--self:deleteLowestFitClassifier(pop_max)
 		self:deleteXCS(pop_max)
 		--self:deleteLeastHashes(pop_max)
 		--self:deleteLowestWeightMagClassifier(pop_max)
 	end
+
 end
 
-function hFES:deleteXCS(pop_max) 
+
+
+-- function hFES:deleteXCS(pop_max) 
 	
-	--ALWAYS DELETE A CLASSIFIER FROM THE LATEST MATCH SET, THIS SHOULD BE MATCH SET PROPORTIONATE REALLY 
+-- 	--ALWAYS DELETE A CLASSIFIER FROM THE LATEST MATCH SET, THIS SHOULD BE MATCH SET PROPORTIONATE REALLY 
 
-	if self.numClassifiers > pop_max then 
-		local worstClassifierFitness = -10000000
-		local worstClassifier = -1 
-		for k,v in pairs(self.classifiers) do 
-			if self.classifiers[k].matchSetEstimate > worstClassifierFitness then 
-				worstClassifierFitness = self.classifiers[k].matchSetEstimate
-				worstClassifier = k 
-			end
+-- 	if self.numClassifiers > pop_max then 
+-- 		local worstClassifierFitness = -10000000
+-- 		local worstClassifier = -1 
+-- 		for k,v in pairs(self.classifiers) do 
+-- 			if self.classifiers[k].matchSetEstimate > worstClassifierFitness then 
+-- 				worstClassifierFitness = self.classifiers[k].matchSetEstimate
+-- 				worstClassifier = k 
+-- 			end
+-- 		end
+-- 		print("deleting classifier with match set estimate : " .. worstClassifierFitness)
+
+-- 		--Delete it here
+-- 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+-- 		self.classifiers[worstClassifier] = nil 
+-- 		self.numClassifiers = self.numClassifiers - 1
+-- 	end
+-- end
+
+function hFES:deleteXCS()
+	local worstClassifierFitness = -10000000
+	local worstClassifier = -1 
+	for k,v in pairs(self.classifiers) do 
+		if self.classifiers[k].matchSetEstimate > worstClassifierFitness then 
+			worstClassifierFitness = self.classifiers[k].matchSetEstimate
+			worstClassifier = k 
 		end
-		print("deleting classifier with match set estimate : " .. worstClassifierFitness)
-
-		--Delete it here
-		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
-		self.classifiers[worstClassifier] = nil 
-		self.numClassifiers = self.numClassifiers - 1
 	end
+	-- print("deleting classifier with match set estimate : " .. worstClassifierFitness)
+
+	--Delete it here
+	--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
+	self.classifiers[worstClassifier] = nil 
+	-- self.numClassifiers = self.numClassifiers - 1
+	return worstClassifier
 end
 
 
@@ -499,7 +528,7 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			table.insert(foveationWindows,foveationWindow)
 			-- foveationWindow.matchings = self:matchClassifiers(foveationWindow) 
-			self:createHiddenWeightMatrix()
+			-- self:createHiddenWeightMatrix()
 			foveationWindow.matchings = self:matchClassifiersFast(foveationWindow) 
 
 
@@ -513,7 +542,6 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
 				self:createClassifier(#foveationSet, foveationWindow,1.0, score)
-				print("iserted = " .. foveationWindow.matchings[1])
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -569,6 +597,17 @@ function hFES:addClassifiersToSet(indexes,set)
 	end
 end
 
+function hFES:deleteAndGetIndex()
+	local insertIndex
+	if self.numClassifiers >= self.pop_max then
+		insertIndex = self:deleteClassifier()
+	else
+		self.numClassifiers = self.numClassifiers + 1
+		insertIndex = self.numClassifiers
+	end
+	return insertIndex
+end
+
 function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	local score = score or 0.0
 	local specificity = specificity or 0.1
@@ -578,7 +617,9 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	-- print(foveationWindow.lines)
 	-- print("lastPP")
 	-- print(foveationWindow.lastPP)
-	print("creating classifier")
+	-- print("delete old classifier")
+	local insertIndex = self:deleteAndGetIndex()
+	-- print("creating classifier")
 	local classifier = hfes.NineDotClassifier()
 	classifier:buildClassifier(	foveationWindow.dots,
 								foveationWindow.lines,
@@ -606,37 +647,37 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	newClassifier.matchSetEstimate = 1
 	--newClassifier:setValue(0)
 	self.numClassifiers = self.numClassifiers + 1
-	self.classifierIdHash = self.classifierIdHash + 1
-	self.classifiers[self.classifierIdHash] = newClassifier
-	foveationWindow.matchings={self.classifierIdHash}
-
+	self.classifierIdHash = insertIndex
+	self.classifiers[insertIndex] = newClassifier
+	foveationWindow.matchings={insertIndex}
+	self.hiddenWeightMatrix[insertIndex] = classifier.hiddenWeights
 end
 
-function hFES:matchClassifiers(foveationWindow)
-	-- print("in match classifiers")
-	-- print(self)
-	-- print("self.classifiers:")
-	-- print(self.classifiers)
-	local matchingSet = {}
-	for k,classifier in pairs(self.classifiers) do
-		-- print("matching class:" .. i)
-		-- local matched = classifier.classifier:match(
-		-- 							foveationWindow.dots,
-		-- 	 						foveationWindow.linesMatrix,
-		-- 	 						foveationWindow.pointMatrix)
-		local matched = classifier.classifier:match(foveationWindow.binaryVector)
+-- function hFES:matchClassifiers(foveationWindow)
+-- 	-- print("in match classifiers")
+-- 	-- print(self)
+-- 	-- print("self.classifiers:")
+-- 	-- print(self.classifiers)
+-- 	local matchingSet = {}
+-- 	for k,classifier in pairs(self.classifiers) do
+-- 		-- print("matching class:" .. i)
+-- 		-- local matched = classifier.classifier:match(
+-- 		-- 							foveationWindow.dots,
+-- 		-- 	 						foveationWindow.linesMatrix,
+-- 		-- 	 						foveationWindow.pointMatrix)
+-- 		local matched = classifier.classifier:match(foveationWindow.binaryVector)
 
-		-- print("fwbinary")
-		-- plPretty.dump(foveationWindow.binaryVector)
-		-- print("classifier")
-		-- plPretty.dump(classifier.classifier.binaryClassifier)
-		if matched then
-			table.insert(matchingSet,k)
-		end
-	end
+-- 		-- print("fwbinary")
+-- 		-- plPretty.dump(foveationWindow.binaryVector)
+-- 		-- print("classifier")
+-- 		-- plPretty.dump(classifier.classifier.binaryClassifier)
+-- 		if matched then
+-- 			table.insert(matchingSet,k)
+-- 		end
+-- 	end
 	
-	return matchingSet
-end
+-- 	return matchingSet
+-- end
 
 function hFES:matchClassifiersFast(foveationWindow)
 	local matchingSet = {}
@@ -649,13 +690,15 @@ function hFES:matchClassifiersFast(foveationWindow)
 		-- plPretty.dump(self.hiddenWeightMatrix)
 		local activityVector = self.hiddenWeightMatrix*inputVector 
 		activityVector = torch.gt(activityVector, 0) 
-		--plPretty.dump(activityVector)
+		-- plPretty.dump(activityVector)
 		for i=1, activityVector:storage():size() do
 			if activityVector[i] == 1 then
-				table.insert(matchingSet,self.indexesToClassifierIndexes[i])
+				table.insert(matchingSet,i)
 			end
 		end
 	end
+	-- print("matching set")
+	-- plPretty.dump(matchingSet)
 	return matchingSet
 end
 

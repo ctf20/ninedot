@@ -407,7 +407,7 @@ function ninedot:getFoveationSet()
 			foveationWindow.lastPP,foveationWindow.pointMatrix = self:extractLastPPInLargeWindow(foveationWindow,lPPS,size[1],size[2])
 			-- print("lastPP")
 			-- print(foveationWindow.lastPP)
-			foveationWindow.binaryVector = self:foveationWindowBinaryClassifier(foveationWindow)
+			-- foveationWindow.binaryVector = self:foveationWindowBinaryClassifier(foveationWindow)
 			foveationWindow.inputVector = self:getInputVector(foveationWindow)
 			
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
@@ -494,45 +494,43 @@ end
 function ninedot:getInputVector(window)
 
 	local inputV = {}
-	
-	local longDots = util.flatten(window.dots)
-	local longLinesMatrix = util.flatten(window.linesMatrix)
-	local longPointMatrix = util.flatten(window.pointMatrix)
-	
-	for john,structure in ipairs({longDots,longLinesMatrix,longPointMatrix}) do
-		for i = 1, structure:storage():size() do 
-			if structure:storage()[i] == 1 then 
-				table.insert(inputV,1)
+	for _,structure in ipairs({window.dots,window.linesMatrix,window.pointMatrix}) do 
+		for i = 1, structure:size()[1] do
+			for j = 1, structure:size()[2] do
+				if structure[i][j] == 1 then 
+					table.insert(inputV,1)
+				end
+				if structure[i][j] == 0 then 
+					table.insert(inputV,-1)
+				end		
 			end
-			if structure:storage()[i] == 0 then 
-				table.insert(inputV,-1)
-			end		
 		end
 	end
 	table.insert(inputV, 1) --This is a 1 to multiply the bias weight with. 
 
 	inputV = torch.Tensor(inputV)
+
 	return inputV 
 end
 
-function ninedot:foveationWindowBinaryClassifier(window)
+-- function ninedot:foveationWindowBinaryClassifier(window)
 
-	local t = {}
-	local longDots = util.flatten(window.dots)
-	local longLinesMatrix = util.flatten(window.linesMatrix)
-	local longPointMatrix = util.flatten(window.pointMatrix)
-	for i=1,longDots:storage():size() do
-		table.insert(t,longDots:storage()[i])
-	end
-	for i=1,longLinesMatrix:storage():size() do
-		table.insert(t,longLinesMatrix:storage()[i])
-	end
-	for i=1,longPointMatrix:storage():size() do
-		table.insert(t,longPointMatrix:storage()[i])
-	end
-	--print("t:")
-	-- plPretty.dump(t)
-	--print("tsize:",#t)
+-- 	local t = {}
+-- 	local longDots = util.flatten(window.dots)
+-- 	local longLinesMatrix = util.flatten(window.linesMatrix)
+-- 	local longPointMatrix = util.flatten(window.pointMatrix)
+-- 	for i=1,longDots:storage():size() do
+-- 		table.insert(t,longDots:storage()[i])
+-- 	end
+-- 	for i=1,longLinesMatrix:storage():size() do
+-- 		table.insert(t,longLinesMatrix:storage()[i])
+-- 	end
+-- 	for i=1,longPointMatrix:storage():size() do
+-- 		table.insert(t,longPointMatrix:storage()[i])
+-- 	end
+-- 	--print("t:")
+-- 	-- plPretty.dump(t)
+-- 	--print("tsize:",#t)
 
-	return util.getConvertedIntTable(t)
-end
+-- 	return util.getConvertedIntTable(t)
+-- end
