@@ -90,7 +90,7 @@ function love.update(dt)
 		-- 	plPretty.dump(d.classifiers)
 		-- end
 
-		d:deleteClassifiers(2000)
+		d:deleteClassifiers(4000)
 
 		d:resetBoardState()
 		--Start of game 

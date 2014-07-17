@@ -15,9 +15,35 @@ function hFES:__init(problem)
 	self.numClassifiers = 0
 	self.classifierIdHash = 0
 	self.rollouts = {} --Stores the set of active classifiers 
+	self.hiddenWeightMatrix = createFixedMatrix()
+	self.indexesToClassifierIndexes = {}
 
 end
 
+function hFES:createFixedMatrix() 
+
+	local length = 675 + 1 
+	local NUM_CLASSIFIERS_MAX = 4000 
+	self.hiddenWeightMatrix  = torch.Tensor(NUM_CLASSIFIERS_MAX,length):fill(0)
+
+end
+
+
+function hFES:createHiddenWeightMatrix() 
+	--Constructs a hidden weight matrix from the existing classifers in self.classifiers 
+	local length = 675 + 1 
+	local count = 1
+	self.hiddenWeightMatrix  = torch.Tensor(self.numClassifiers,length)
+	for k,v in pairs(self.classifiers) do
+		self.indexesToClassifierIndexes[count] = k
+		--print("LENGTH = " .. v.classifier.hiddenWeights:storage():size())
+		for i = 1, length do 
+			self.hiddenWeightMatrix[count][i] = v.classifier.hiddenWeights[i]
+		end
+		count = count + 1
+	end
+
+end
 
 --- a method
 function hFES:print()
@@ -188,8 +214,8 @@ function hFES:deleteClassifiers(pop_max)
 	while self.numClassifiers > pop_max do 
 
 		--self:deleteLowestFitClassifier(pop_max)
-		--self:deleteXCS(pop_max)
-		self:deleteLeastHashes(pop_max)
+		self:deleteXCS(pop_max)
+		--self:deleteLeastHashes(pop_max)
 		--self:deleteLowestWeightMagClassifier(pop_max)
 	end
 end
@@ -472,7 +498,10 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 		-- print("len f:" .. #foveationPosition.foveationWindows)
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			table.insert(foveationWindows,foveationWindow)
-			foveationWindow.matchings = self:matchClassifiers(foveationWindow) 
+			-- foveationWindow.matchings = self:matchClassifiers(foveationWindow) 
+			self:createHiddenWeightMatrix()
+			foveationWindow.matchings = self:matchClassifiersFast(foveationWindow) 
+
 
 			--Update the matchSetEstimates of classifiers (estimates the size of the matching set over all foveation positions for this classiifer )
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -549,6 +578,7 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	-- print(foveationWindow.lines)
 	-- print("lastPP")
 	-- print(foveationWindow.lastPP)
+	print("creating classifier")
 	local classifier = hfes.NineDotClassifier()
 	classifier:buildClassifier(	foveationWindow.dots,
 								foveationWindow.lines,
@@ -556,6 +586,8 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 								foveationWindow,
 								specificity
 								)
+	--print("classifier hidden weights")
+	--plPretty.dump(classifier.hiddenWeights)
 	-- print("classifier grid")
 	-- print(classifier.grid.grid)
 	-- print("classifier lines")
@@ -593,6 +625,7 @@ function hFES:matchClassifiers(foveationWindow)
 		-- 	 						foveationWindow.linesMatrix,
 		-- 	 						foveationWindow.pointMatrix)
 		local matched = classifier.classifier:match(foveationWindow.binaryVector)
+
 		-- print("fwbinary")
 		-- plPretty.dump(foveationWindow.binaryVector)
 		-- print("classifier")
@@ -605,6 +638,26 @@ function hFES:matchClassifiers(foveationWindow)
 	return matchingSet
 end
 
+function hFES:matchClassifiersFast(foveationWindow)
+	local matchingSet = {}
+	if self.numClassifiers ~= 0 then
+		--Vector matrix multiplication. 
+		local inputVector = foveationWindow.inputVector
+		-- print("inputVector")
+		-- plPretty.dump(inputVector)
+		-- print("weights")
+		-- plPretty.dump(self.hiddenWeightMatrix)
+		local activityVector = self.hiddenWeightMatrix*inputVector 
+		activityVector = torch.gt(activityVector, 0) 
+		--plPretty.dump(activityVector)
+		for i=1, activityVector:storage():size() do
+			if activityVector[i] == 1 then
+				table.insert(matchingSet,self.indexesToClassifierIndexes[i])
+			end
+		end
+	end
+	return matchingSet
+end
 
 function hFES:getMatchSet()
 

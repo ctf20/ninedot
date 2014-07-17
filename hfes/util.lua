@@ -222,14 +222,15 @@ function util.matchClassifierBinary(input,pattern)
   return bit.band(tonumber(input,2),tonumber(pattern),2) == input
 end
 
-function util.matchClassifierInteger(input,pattern)
-  return bit.band(input,pattern) == input
-end
+-- function util.matchClassifierInteger(input,pattern)
+--   return bit.band(input,pattern) == input
+-- end
 
 function util.matchClassifierIntegerTable(inputT,patternT)
   local match = true
+  local b = bit.band
   for i=1,#inputT do
-    if util.matchClassifierInteger(inputT[i],patternT[i]) == false then
+    if b(inputT[i],patternT[i]) ~= inputT[i] then
       return false
     end
   end

@@ -408,6 +408,8 @@ function ninedot:getFoveationSet()
 			-- print("lastPP")
 			-- print(foveationWindow.lastPP)
 			foveationWindow.binaryVector = self:foveationWindowBinaryClassifier(foveationWindow)
+			foveationWindow.inputVector = self:getInputVector(foveationWindow)
+			
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
 		foveationPosition.dotCord = self.bs.dotsCords[i]
@@ -487,7 +489,34 @@ function ninedot:extractLastPPInLargeWindow(window,lPPS,rows,columns)
 	return lastPP,pointMatrix
 end
 
+
+
+function ninedot:getInputVector(window)
+
+	local inputV = {}
+	
+	local longDots = util.flatten(window.dots)
+	local longLinesMatrix = util.flatten(window.linesMatrix)
+	local longPointMatrix = util.flatten(window.pointMatrix)
+	
+	for john,structure in ipairs({longDots,longLinesMatrix,longPointMatrix}) do
+		for i = 1, structure:storage():size() do 
+			if structure:storage()[i] == 1 then 
+				table.insert(inputV,1)
+			end
+			if structure:storage()[i] == 0 then 
+				table.insert(inputV,-1)
+			end		
+		end
+	end
+	table.insert(inputV, 1) --This is a 1 to multiply the bias weight with. 
+
+	inputV = torch.Tensor(inputV)
+	return inputV 
+end
+
 function ninedot:foveationWindowBinaryClassifier(window)
+
 	local t = {}
 	local longDots = util.flatten(window.dots)
 	local longLinesMatrix = util.flatten(window.linesMatrix)
