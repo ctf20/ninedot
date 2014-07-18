@@ -2,6 +2,13 @@
 
 util = {}
 
+function util.median (numlist)
+    if type(numlist) ~= 'table' then return numlist end
+    table.sort(numlist)
+    if #numlist %2 == 0 then return (numlist[#numlist/2] + numlist[#numlist/2+1]) / 2 end
+    return numlist[math.ceil(#numlist/2)]
+end
+
 local function strToTable(input)
   local t = {}
   input:gsub(".",function(c) table.insert(t,c) end)

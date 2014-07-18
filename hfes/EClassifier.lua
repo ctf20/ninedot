@@ -38,20 +38,16 @@ function EClassifier:setValue(value)
 end
 
 function EClassifier:calcFitness()
-	local fit 
-	if self.valueHistory:storage():size() == 1 then 
-		fit = 0
-	else
---		fit = -torch.var(self.valueHistory)/(torch.mean(self.valueHistory)*(self.valueHistory:storage():size()))
-		fit = -torch.var(self.valueHistory)
-	end
-	--print("fitness = " .. fit .. " variance = " .. torch.var(self.valueHistory) )
+	self.fitness = self:slidingWindowFitness(0.9,0.1)
+end
 
-	self.fitness = fit 
-	--fit = math.abs(self.weight)
-
-	return fit 
-
+function EClassifier:slidingWindowFitness(wOld,WNew)
+	local wOld = wOld or 0.9
+	local wNew = wNew or 0.1
+	local fit = wOld * self.fitness
+	fit = fit + wNew * self.weight
+	print(self.weight)
+	return fit
 end
 
 
@@ -71,15 +67,15 @@ function EClassifier:calcFitnessXCS()
 
 end
 
-function EClassifier:replicate()
+function EClassifier:replicate(fitness)
 --	print("REPLICATING ******************************")
 	local clone = self:duplicate()
-	clone.fitness = 0.0
+	clone.fitness = fitness
 	clone.weight = 0.0
 	clone.valueHistory = torch.Tensor({})
 	--print("printing selfvh")
 	--print(self.valueHistory)
-	clone:setValue(self.valueHistory[-1])
+	clone:setValue(0.0)
 	clone.matchSetEstimate = 0.0 
 	clone.relativeAccuracy = 0.0
 	clone.accuracy = 0.0

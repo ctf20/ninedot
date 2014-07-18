@@ -14,7 +14,7 @@ local historyMSS = {} --Actual Match set size
 local historyGameScore = {}
 local historyGameScoreSlide = {}
 local numGames = 0 
-
+local niched = false
 function delay_s(delay)
   delay = delay or 1
   local time_to = os.time() + delay
@@ -42,7 +42,7 @@ end
 
 
 function love.update(dt)
-
+	local niched = false
 	-- Start
 
 
@@ -52,16 +52,18 @@ function love.update(dt)
 	if step <= nd.k then 
 	 	--print("doing move:" .. step)
 	 	--d:makeMove()
-	 	d:makeMoveTD()
+	 	print("making move, niched:" .. tostring(niched))
+	 	d:makeMoveTD(niched)
  		--d:printBoardState()
 	step = step + 1 
 	elseif step > nd.k then 
 		--Called after game over. 
 		d:updateValues()
 
-		if numGames%20 == 0	then 
-			d:evolveClassifiers() --Evolve the classifiers!! :) 
-		end	
+		-- if numGames%20 == 0	then
+			print("evolving:")
+			d:evolveClassifiers(niched) --Evolve the classifiers!! :) 
+		-- end	
 		local gameScore = 0 
 		for h = 1, #d.rollouts do 
 			gameScore = gameScore + d.rollouts[h].reward
