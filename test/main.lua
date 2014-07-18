@@ -3,7 +3,7 @@
 --require 'strict'
 require 'hfes'
 local plPretty = require 'pl.pretty'
---math.randomseed( os.time() )
+math.randomseed( os.time() )
 
 local historyScore = {}
 local historyFitness = {}

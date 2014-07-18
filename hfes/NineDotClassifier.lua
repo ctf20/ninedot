@@ -53,6 +53,7 @@ end
 function NineDotClassifier:createHiddenWeights()
 
 	local hiddenWeights = torch.Tensor(self.totalSize + 1)
+	hiddenWeights[self.totalSize + 1] = 0 -- make sure bias is 0 initially
 	local count = 1
 	for _,structure in ipairs({self.grid.grid,self.lines.linesMatrix,self.lastPP.pointMatrix}) do 
 		for i = 1, structure:size()[1] do
@@ -62,7 +63,7 @@ function NineDotClassifier:createHiddenWeights()
 			end
 		end
 	end
-	bias = -(torch.sum(torch.pow(hiddenWeights,2))-0.5)
+	local bias = -(torch.sum(torch.pow(hiddenWeights,2))-0.5)
 	hiddenWeights[self.totalSize + 1] = bias
 	
 	return hiddenWeights 
