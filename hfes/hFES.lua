@@ -220,8 +220,8 @@ end
 function hFES:deleteClassifiers(pop_max)
 	if self.numClassifiers > pop_max then 
 
-		--self:deleteLowestFitClassifier(pop_max)
-		self:deleteXCS(pop_max)
+		self:deleteLowestFitClassifier(pop_max)
+		--self:deleteXCS(pop_max)
 		--self:deleteLeastHashes(pop_max)
 		--self:deleteLowestWeightMagClassifier(pop_max)
 	end

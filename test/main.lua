@@ -59,8 +59,9 @@ function love.update(dt)
 		--Called after game over. 
 		d:updateValues()
 
-		d:evolveClassifiers() --Evolve the classifiers!! :) 
-		
+		if numGames%20 == 0	then 
+			d:evolveClassifiers() --Evolve the classifiers!! :) 
+		end	
 		local gameScore = 0 
 		for h = 1, #d.rollouts do 
 			gameScore = gameScore + d.rollouts[h].reward
@@ -502,7 +503,7 @@ for i = 1 ,#d.rollouts do
 		--GREEN = FITNESS (the fitness tends to become very massively negative and explode eventually!!!)
 		love.graphics.setColor(0,255,100,255)
 		love.graphics.circle( "fill", 500 + (i-1)*300 + a*3, 10 + 500-1000*d.classifiers[d.rollouts[i].activeClassifiers[a]].fitness , 2, 255 )
-
+		--print("fitness = " .. d.classifiers[d.rollouts[i].activeClassifiers[a]].fitness  )
 		--YELLOW = length of value history i.e. number of times matched in total. 
 		love.graphics.setColor(255,255,00,255)
 		love.graphics.circle( "fill", 500 + (i-1)*300 + a*3, 10 + 500-1*d.classifiers[d.rollouts[i].activeClassifiers[a]].valueHistory:storage():size()  , 2, 255 )
