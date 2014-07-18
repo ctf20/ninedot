@@ -15,6 +15,8 @@ local historyGameScore = {}
 local historyGameScoreSlide = {}
 local numGames = 0 
 
+local vis = 1
+
 function delay_s(delay)
   delay = delay or 1
   local time_to = os.time() + delay
@@ -61,6 +63,7 @@ function love.update(dt)
 
 		if numGames%20 == 0	then 
 			d:evolveClassifiers() --Evolve the classifiers!! :) 
+			print("game = " .. numGames)
 		end	
 		local gameScore = 0 
 		for h = 1, #d.rollouts do 
@@ -109,7 +112,22 @@ end
 
 function love.draw()
 --delay_s(1)
-if numGames%1 == 0 then 
+
+
+--Analysis parts of the visualization 
+   if love.keyboard.isDown("up") then
+   	  vis = 0  	      --delay_s(2)
+      print("Visualization off ")
+
+   end
+   if love.keyboard.isDown("down") then
+   	  vis = 1  	      --delay_s(2)
+      print("Visualization on ")
+
+   end
+
+
+if numGames%1 == 0 and vis == 1 then 
 
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
@@ -207,19 +225,13 @@ end
 	-- 	end
 	-- end
 
---Analysis parts of the visualization 
-   if love.keyboard.isDown("up") then
-      delay_s(2)
-      print("Key pressed")
-
-   end
 -----------------------------------------------------------------------------
 -- Print all the foveation windows on the right of the screen. 
 -----------------------------------------------------------------------------
 
 x = 450 
 y = -20
-if #foveationsBig > 0 then
+if #foveationsBig > 0  then
 
 	for f = 1, #foveationsBig do 
 
@@ -523,6 +535,35 @@ for i = 1 ,#d.rollouts do
 	end
 
 end
+
+
+-------PLOT A MATRIX OF THE CLASSIFIERS THAT EXIST
+--[ Go through ALL the d.classifiers and visualize them.
+local l = math.floor(math.sqrt(d.pop_max))
+for i = 1,l do 
+	for j = 1,l  do 
+		--print( "i = " .. i .. " " .. " j = " .. j )
+		 if d.classifiers[(i-1)*l + j] ~= null then 
+	 		 love.graphics.setColor(d.classifiers[(i-1)*l + j].fitness*100,d.classifiers[(i-1)*l + j].fitness*100,125,255)
+			 love.graphics.rectangle("fill", 1100 + (i-1)*2 , 20 + (j-1)*2, 2,  2 )
+		end
+		if d.classifiers[(i-1)*l + j] ~= null then 
+	 		 love.graphics.setColor(d.classifiers[(i-1)*l + j].totalHashes*100, d.classifiers[(i-1)*l + j].totalHashes*100,125,255)
+			 love.graphics.rectangle("fill", 1100 + (i-1)*2 , 190 + (j-1)*2, 2,  2 )
+		end
+		if d.classifiers[(i-1)*l + j] ~= null then 
+	 		 love.graphics.setColor(d.classifiers[(i-1)*l + j].matchSetEstimate*10, d.classifiers[(i-1)*l + j].matchSetEstimate*10,125,255)
+			 love.graphics.rectangle("fill", 1100 + (i-1)*2 , 340+ (j-1)*2, 2,  2 )
+		end
+		if d.classifiers[(i-1)*l + j] ~= null then 
+	 		 love.graphics.setColor(d.classifiers[(i-1)*l + j].valueHistory:storage():size()*10, d.classifiers[(i-1)*l + j].valueHistory:storage():size()*10,125,255)
+			 love.graphics.rectangle("fill", 1200 + (i-1)*2 , 20+ (j-1)*2, 2,  2 )
+		end
+	end
+end
+
+
+
 
 -- table.insert(self.rollouts, {	reward = instantScore, activeClassifiers = activeClassifiers,
 -- 									foveationWindows=foveationWindowsMoves, classifiersToWindows=classifersToWindowsMoves})

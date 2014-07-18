@@ -14,7 +14,7 @@ function hFES:__init(problem)
 	-- print("#self.classifiers:" .. #self.classifiers)
 	self.numClassifiers = 0
 	self.rollouts = {} --Stores the set of active classifiers
-	self.pop_max = 5000
+	self.pop_max = 1500
 	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 
@@ -293,8 +293,6 @@ function hFES:deleteLeastHashes(pop_max)
 
 end
 
-
-
 function hFES:deleteLowestFitClassifier(pop_max) 
 	--print("HERe2")
 	--print(self.classifiers)
@@ -357,7 +355,7 @@ function hFES:makeMoveTD()
 	self.problem:updateBoard(move_id[chosenMove])
 
 	local bla2, postScore = self.problem:getScoreCurrentPosition()
-	print("instant reward = " .. preScore .. " " .. postScore)
+	--print("instant reward = " .. preScore .. " " .. postScore)
 	self:updateRollout(activeClassifiers[chosenMove], postScore-preScore, foveationWindowsMoves[chosenMove], classifersToWindowsMoves[chosenMove])
 
 end
@@ -536,7 +534,7 @@ function hFES:getActiveClassifiersForMove(move, visualize, score)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
 				self:createClassifier(#foveationSet, foveationWindow,1.0, score)
-				print("Creating classifier. Score = " .. score)
+				--print("Creating classifier. Score = " .. score)
 
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
@@ -606,13 +604,13 @@ end
 function hFES:deleteAndGetIndex()
 	local insertIndex
 	if self.numClassifiers >= self.pop_max then
-		print("deleting class")
+		--print("deleting class")
 		insertIndex = self:deleteClassifier()
 	else
 		self.numClassifiers = self.numClassifiers + 1
 		insertIndex = self.numClassifiers
-		print("not deleting, index:" )
-		print(insertIndex)
+		--print("not deleting, index:" )
+		--print(insertIndex)
 	end
 	return insertIndex
 end
@@ -620,7 +618,7 @@ end
 function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	local score = score or 0.0
 	local specificity = specificity or 0.1
-	print("Creating classifier*****/*****************************")
+	--print("Creating classifier*****/*****************************")
 	-- print(foveationWindow.dots)
 	-- print("lines")
 	-- print(foveationWindow.lines)
@@ -649,10 +647,10 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score)
 	--  						foveationWindow.lines,
 	--  						foveationWindow.lastPP))
 	-- TO DO PUT IN ECLASSIFIER> 
-	print("testing match")
-	print(classifier.hiddenWeights*foveationWindow.inputVector)
+	--print("testing match")
+	--print(classifier.hiddenWeights*foveationWindow.inputVector)
 	if (classifier.hiddenWeights*foveationWindow.inputVector) < 0.0 then
-		print("match failed")
+	--	print("match failed")
 		local l = torch.Tensor(676,3)
 		l[{{},{1}}] = classifier.hiddenWeights
 		l[{{},{2}}] = foveationWindow.inputVector

@@ -101,7 +101,7 @@ function ninedot:resetBoardState()
 	-- Create k random dots 
 	local num_dots_made = 0
 	while num_dots_made < self.n do
-		print('here making dots') 
+		--print('here making dots') 
 		--local x = math.random(1, self.boardSize)
 		--local y = math.random(1, self.boardSize)
 		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
@@ -111,7 +111,7 @@ function ninedot:resetBoardState()
 			self.tBoard[x][y] = 1
 			table.insert(self.bs.dotsCords,{x,y})
 			num_dots_made = num_dots_made + 1
-			print("dot in " .. x .. "," .. y)
+			--print("dot in " .. x .. "," .. y)
 		end 
 	end
 	local a = math.floor((self.largeBoardWidth/2)-(self.boardSize/2)+1)
@@ -199,7 +199,7 @@ function ninedot:getScoreCurrentPosition()
 		dots_covered = self:getDotsCovered(self.bs.pp[1],nil,dots_covered)
 	else
 		for i=1,#self.bs.pp-1 do
-			print("moving")
+			--print("moving")
 			dots_covered = self:getDotsCovered(self.bs.pp[i],self.bs.pp[i+1],dots_covered)
 		end
 	end
