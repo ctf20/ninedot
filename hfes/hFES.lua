@@ -14,7 +14,7 @@ function hFES:__init(problem)
 	-- print("#self.classifiers:" .. #self.classifiers)
 	self.numClassifiers = 0
 	self.rollouts = {} --Stores the set of active classifiers
-	self.pop_max = 3000
+	self.pop_max = 2000
 	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 	self.classifierFitnesses = {}
@@ -372,16 +372,16 @@ function hFES:deleteClassifier()
 	return deleteIndex
 end
 
-function hFES:deleteClassifiers(pop_max)
-	if self.numClassifiers > pop_max then 
+-- function hFES:deleteClassifiers(pop_max)
+-- 	if self.numClassifiers > pop_max then 
 
-		self:deleteLowestFitClassifier()
-		--self:deleteXCS(pop_max)
-		--self:deleteLeastHashes(pop_max)
-		--self:deleteLowestWeightMagClassifier(pop_max)
-	end
+-- 		self:deleteLowestFitClassifier()
+-- 		--self:deleteXCS(pop_max)
+-- 		--self:deleteLeastHashes(pop_max)
+-- 		--self:deleteLowestWeightMagClassifier(pop_max)
+-- 	end
 
-end
+-- end
 
 
 
@@ -540,6 +540,7 @@ function hFES:updateValues()
 	local val = 0 
 	for i = 1, #self.rollouts do 
 		local totalAccuracy = 0 
+		print("num active classifiers = " ..  #self.rollouts[i].activeClassifiers)
 		for j = 1, #self.rollouts[i].activeClassifiers do 
 
 			if i == #self.rollouts then 
@@ -555,7 +556,7 @@ function hFES:updateValues()
 			-- print("WEIGHT= " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight)
 			-- print("adding=" .. alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
 			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
-			--print("value in rollout = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].valueHistory:storage():size())
+			print("weights in rollout = " ..self.classifiers[self.rollouts[i].activeClassifiers[j]].weight .. " " ..  self.rollouts[i].reward .. " " ..  values[i].. " " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
 			
 
 			--XCS TYPE FITNESS CALCULATION HERE... NEED TO CHECK 
@@ -847,10 +848,13 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score,_
 	newClassifier:setValue(score/numPositions)
 	-- newClassifier:setValue(0.01)
 	if niched then
-		newClassifier.fitness = 1.0
+--		newClassifier.fitness = 1.0
+		newClassifier.fitness = self.averageFitness
 	else
+		--WHY???? are you setting fitness to 0.01 
 		-- newClassifier.fitness = (score/numPositions) -- self.averageFitness
-		newClassifier.fitness = 0.01
+		newClassifier.fitness = self.averageFitness
+--		newClassifier.fitness = 0.01
 	end
 	newClassifier.matchSetEstimate = 1
 	--newClassifier:setValue(0)
