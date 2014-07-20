@@ -10,6 +10,7 @@ local historyFitness = {}
 local historyHashes = {}
 local historyVHL = {} --Value history length 
 local historyMSS = {} --Actual Match set size 
+local vis = 1 
 
 local historyGameScore = {}
 local historyGameScoreSlide = {}
@@ -110,8 +111,28 @@ function love.update(dt)
 end
 
 function love.draw()
+
+	
+
+   --Analysis parts of the visualization 
+   if love.keyboard.isDown("up") then
+   	  vis = 0  	      --delay_s(2)
+      print("Visualization off ")
+
+   end
+   if love.keyboard.isDown("down") then
+   	  vis = 1  	      --delay_s(2)
+      print("Visualization on ")
+
+   end
+   --Analysis parts of the visualization 
+   if love.keyboard.isDown("left") then
+      delay_s(2)
+      print("slow")
+
+   end
 --delay_s(1)
-if numGames%1 == 0 then 
+if numGames%1 == 0 and vis == 1 then 
 
 --Get the data to draw from the problem specificiation 
 local stuffToDrawBig = d:getImage() --Gets a set of current classiifers for this board state. 
@@ -209,12 +230,7 @@ end
 	-- 	end
 	-- end
 
---Analysis parts of the visualization 
-   if love.keyboard.isDown("up") then
-      delay_s(2)
-      print("Key pressed")
 
-   end
 -----------------------------------------------------------------------------
 -- Print all the foveation windows on the right of the screen. 
 -----------------------------------------------------------------------------
