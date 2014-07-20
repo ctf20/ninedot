@@ -709,7 +709,7 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
 				-- self:deleteExcessClassifiers()
-				self:createClassifier(#foveationSet, foveationWindow,1.0, score, niched)
+				self:createClassifier(#foveationSet, foveationWindow,0.5, score, niched)
 				-- print("Creating classifier. Score = " .. score)
 
 			end

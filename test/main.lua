@@ -61,7 +61,7 @@ function love.update(dt)
 		--Called after game over. 
 		d:updateValues()
 
-		if numGames%20 == 0	then
+		if numGames%10 == 0	then
 			print("evolving:")
 			d:evolveClassifiers(niched) --Evolve the classifiers!! :) 
 		end	
@@ -111,8 +111,6 @@ function love.update(dt)
 end
 
 function love.draw()
-
-	
 
    --Analysis parts of the visualization 
    if love.keyboard.isDown("up") then
