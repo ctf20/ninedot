@@ -60,10 +60,10 @@ function love.update(dt)
 		--Called after game over. 
 		d:updateValues()
 
-		--if numGames%20 == 0	then
+		if numGames%20 == 0	then
 			print("evolving:")
 			d:evolveClassifiers(niched) --Evolve the classifiers!! :) 
-		--end	
+		end	
 		local gameScore = 0 
 		for h = 1, #d.rollouts do 
 			gameScore = gameScore + d.rollouts[h].reward

@@ -38,16 +38,8 @@ function EClassifier:setValue(value)
 end
 
 function EClassifier:calcFitness()
-	self.fitness = self:slidingWindowFitness(0.9,0.1)
-end
-
-function EClassifier:slidingWindowFitness(wOld,WNew)
-	local wOld = wOld or 0.9
-	local wNew = wNew or 0.1
-	local fit = wOld * self.fitness
-	fit = fit + wNew * self.weight
-	print(self.weight)
-	return fit
+	self.fitness = 0.9* self.fitness + 0.1 * math.pow(self.weight, 2) 
+	return self.fitness  
 end
 
 
@@ -68,6 +60,7 @@ function EClassifier:calcFitnessXCS()
 end
 
 function EClassifier:replicate(fitness)
+	print("MEDIAN FITNESS = " .. fitness )
 --	print("REPLICATING ******************************")
 	local clone = self:duplicate()
 	clone.fitness = fitness

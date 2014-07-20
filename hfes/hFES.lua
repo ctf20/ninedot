@@ -14,7 +14,7 @@ function hFES:__init(problem)
 	-- print("#self.classifiers:" .. #self.classifiers)
 	self.numClassifiers = 0
 	self.rollouts = {} --Stores the set of active classifiers
-	self.pop_max = 2000
+	self.pop_max = 5000
 	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 	self.classifierFitnesses = {}
@@ -365,7 +365,8 @@ function hFES:getClassifierFitnesses(ids)
 end
 
 function hFES:deleteClassifier()
-	local deleteIndex = self:deleteLowestFitClassifier()
+	--local deleteIndex = self:deleteLowestFitClassifier()
+	local deleteIndex = self:deleteLeastHashes()
 	self.classifierFitnesses[deleteIndex] = nil
 --	local deleteIndex = self:deleteXCS(self.pop_max)
 	self.numClassifiers = self.numClassifiers - 1
@@ -428,7 +429,6 @@ end
 
 function hFES:deleteLeastHashes(pop_max) 
 	
-	if self.numClassifiers > pop_max then 
 		local worstClassifierFitness = 10000000
 		local worstClassifier = -1 
 		for k,v in pairs(self.classifiers) do 
@@ -437,15 +437,13 @@ function hFES:deleteLeastHashes(pop_max)
 				worstClassifier = k 
 			end
 		end
-		print("deleting classifier with least hashes : " .. worstClassifierFitness)
+--		print("deleting classifier with least hashes : " .. worstClassifierFitness)
 
 		--Delete it here
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
 		self.classifiers[worstClassifier] = nil 
-		self.numClassifiers = self.numClassifiers - 1
-	
-	end
-
+--		self.numClassifiers = self.numClassifiers - 1
+		return worstClassifier
 end
 
 
@@ -473,7 +471,7 @@ function hFES:deleteLowestWeightMagClassifier(pop_max)
 	--print("HERe2")
 	--print(self.classifiers)
 	if self.numClassifiers > pop_max then 
-		local worstClassifierFitness = 10000000000
+		local worstClassifierFitness = 10000000000	
 		local worstClassifier = -1 
 		for k,v in pairs(self.classifiers) do 
 			w = math.pow(self.classifiers[k].weight,2)
@@ -525,7 +523,7 @@ end
 
 function hFES:updateValues()
 
-	local DISCOUNT = 0.0 
+	local DISCOUNT = 0.1
 	local ERROR_THRESHOLD = 0.01
 	local values = {}
 	for i = 1, #self.rollouts do 
@@ -556,7 +554,7 @@ function hFES:updateValues()
 			-- print("WEIGHT= " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight)
 			-- print("adding=" .. alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
 			self.classifiers[self.rollouts[i].activeClassifiers[j]]:setValue(self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
-			print("weights in rollout = " ..self.classifiers[self.rollouts[i].activeClassifiers[j]].weight .. " " ..  self.rollouts[i].reward .. " " ..  values[i].. " " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
+			--print("weights in rollout = " ..self.classifiers[self.rollouts[i].activeClassifiers[j]].weight .. " " ..  self.rollouts[i].reward .. " " ..  values[i].. " " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].weight + alpha * (self.rollouts[i].reward + DISCOUNT*val - values[i]))
 			
 
 			--XCS TYPE FITNESS CALCULATION HERE... NEED TO CHECK 
