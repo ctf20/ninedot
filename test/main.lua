@@ -452,7 +452,7 @@ love.graphics.setColor(00,00,255,255)
 for i = 1,#historyHashes do 
 	for j = 1, #historyHashes[i] do 
 		--print(historyHashes[i][j])
-		love.graphics.circle( "fill", i, 10 + 200-2*historyHashes[i][j] , 1, 255 )
+		love.graphics.circle( "fill", i, 10 + 200 + 1*historyHashes[i][j] , 1, 255 )
 	end
 end
 if #historyHashes > 100 then 
