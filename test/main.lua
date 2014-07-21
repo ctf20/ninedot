@@ -31,6 +31,8 @@ function love.load()
 	--First start 
 	nd = hfes.ninedot(n,k,b)
 	d = hfes.hFES(nd)
+	print("testbs")
+	print(d.allBoardStatesDict)
 	step = 1 
 	--local blabla = 0
 	 -- hero = {} -- new table for the hero
@@ -106,6 +108,10 @@ function love.update(dt)
 	--    hero.x = hero.x - hero.speed*dt
 	-- elseif love.keyboard.isDown("right") then
 	--    hero.x = hero.x + hero.speed*dt
+	-- end
+	-- for k,v in pairs(d.classifiers) do
+	-- 	print(k)
+	-- 	print(table.concat(v.matchedBoardStates))
 	-- end
 
 end

@@ -19,6 +19,8 @@ function hFES:__init(problem)
 	self.indexesToClassifierIndexes = {}
 	self.classifierFitnesses = {}
 	self.averageFitness = 0
+	self.allBoardStatesDict = {}
+	self.allBoardStatesMatrix = nil
 end
 
 function hFES:createFixedMatrix() 
@@ -29,22 +31,6 @@ function hFES:createFixedMatrix()
 
 end
 
--- function hFES:createHiddenWeightMatrix() 
--- 	--Constructs a hidden weight matrix from the existing classifers in self.classifiers 
--- 	local length = 675 + 1 
--- 	local count = 1
--- 	self.hiddenWeightMatrix  = torch.Tensor(self.numClassifiers,length)
--- 	for k,v in pairs(self.classifiers) do
--- 		self.indexesToClassifierIndexes[count] = k
--- 		--print("LENGTH = " .. v.classifier.hiddenWeights:storage():size())
--- 		for i = 1, length do 
--- 			self.hiddenWeightMatrix[count][i] = v.classifier.hiddenWeights[i]
--- 		end
--- 		count = count + 1
--- 	end
-
--- end
-
 --- a method
 function hFES:print()
 
@@ -52,6 +38,34 @@ function hFES:print()
 
 end
 
+function hFES:boardStateUnique(bs,hash)
+	local hash = hash or bs.inputVectorHash
+	if self.allBoardStatesDict[hash] == nil then
+		return true
+	else
+		return false
+	end
+end
+
+function hFES:addUniqueBS(bs,hash)
+	local hash = hash or bs.inputVectorHash
+	-- print("hash")
+	-- print(hash)
+	if self:boardStateUnique(bs,hash) then
+		print("not seen")
+		if self.allBoardStatesMatrix == nil then
+			self.allBoardStatesMatrix = bs.inputVector:reshape(bs.inputVector:size()[1],1)
+		else
+			self.allBoardStatesMatrix = torch.cat(self.allBoardStatesMatrix,bs.inputVector:reshape(bs.inputVector:size()[1],1))
+		end
+		local id = self.allBoardStatesMatrix:size()[2]
+		plPretty.dump(self.allBoardStatesMatrix:size())
+		self.allBoardStatesDict[hash] = id
+		return id
+	else
+		return nil
+	end
+end
 
 function shuffled(tab)
 local n, order, res = #tab, {}, {}
@@ -61,22 +75,6 @@ table.sort(order, function(a,b) return a.rnd < b.rnd end)
 for i=1,n do res[i] = tab[order[i].idx] end
 return res
 end
-
-
--- --- Match and Move method 
--- function hFES:makeMove()
-	
-	
--- 	local move_id = shuffled(self.problem:getMoves())
--- 	local values = self:getValues(move_id)
--- 	-- local chosenMove = self:eGreedyChoice(move_id,values)
--- 	-- self.problem:updateBoard(chosenMove)
-	
--- 	local score = self.problem:getScores(move_id) --I'm going to be using the getScores and moving according to get scores for now. 
--- 	local chosenMove = self:eGreedyChoice(move_id, score)
--- 	self.problem:updateBoard(chosenMove)
-
--- end
 
 
 function hFES:updateRollout(activeClassifiers, instantScore, foveationWindowsMoves, classifersToWindowsMoves)
@@ -275,19 +273,35 @@ function hFES:evolveClassifiers(_niched) --Evolve the classifiers!! :)
 				local child = winner:replicate(median)
 				local chosenRollout = self.rollouts[math.random(1,#self.rollouts)]
 				child:mutate(chosenRollout.foveationWindows)
-				self:insertNewClassifier(child)
+				self:insertNewClassifier(child,true)
 			end
 		end
 	end
 end
 
-function hFES:insertNewClassifier(classifier)
+function hFES:insertNewClassifier(classifier,doMatching)
 	local insertIndex = self:deleteAndGetIndex()
 	self.classifiers[insertIndex] = classifier
 	self.hiddenWeightMatrix[insertIndex] = classifier.classifier.hiddenWeights
 	self.classifierFitnesses[insertIndex] = classifier.fitness
 	self:updateAverageFitness()
 	-- print("inserted new child:" .. insertIndex)
+	if doMatching then
+		self:matchClassifierToHistoricBoardstates(classifier)
+	end
+end
+
+function hFES:matchClassifierToHistoricBoardstates(classifier)
+	-- print("classifier.hiddenWeights")
+	local matchings = self.allBoardStatesMatrix:t()*classifier.classifier.hiddenWeights
+	-- print("matchings")
+	-- print(matchings)
+	for id=1,matchings:size()[1] do
+		if matchings[id] > 0 then
+			-- print("matched" .. id)
+			table.insert(classifier.matchedBoardStates,id)
+		end
+	end
 end
 
 function hFES:binaryTournament(pop,pareto)
@@ -373,41 +387,6 @@ function hFES:deleteClassifier()
 	return deleteIndex
 end
 
--- function hFES:deleteClassifiers(pop_max)
--- 	if self.numClassifiers > pop_max then 
-
--- 		self:deleteLowestFitClassifier()
--- 		--self:deleteXCS(pop_max)
--- 		--self:deleteLeastHashes(pop_max)
--- 		--self:deleteLowestWeightMagClassifier(pop_max)
--- 	end
-
--- end
-
-
-
--- function hFES:deleteXCS(pop_max) 
-	
--- 	--ALWAYS DELETE A CLASSIFIER FROM THE LATEST MATCH SET, THIS SHOULD BE MATCH SET PROPORTIONATE REALLY 
-
--- 	if self.numClassifiers > pop_max then 
--- 		local worstClassifierFitness = -10000000
--- 		local worstClassifier = -1 
--- 		for k,v in pairs(self.classifiers) do 
--- 			if self.classifiers[k].matchSetEstimate > worstClassifierFitness then 
--- 				worstClassifierFitness = self.classifiers[k].matchSetEstimate
--- 				worstClassifier = k 
--- 			end
--- 		end
--- 		print("deleting classifier with match set estimate : " .. worstClassifierFitness)
-
--- 		--Delete it here
--- 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
--- 		self.classifiers[worstClassifier] = nil 
--- 		self.numClassifiers = self.numClassifiers - 1
--- 	end
--- end
-
 function hFES:deleteXCS()
 	local worstClassifierFitness = -10000000
 	local worstClassifier = -1 
@@ -445,8 +424,6 @@ function hFES:deleteLeastHashes(pop_max)
 --		self.numClassifiers = self.numClassifiers - 1
 		return worstClassifier
 end
-
-
 
 function hFES:deleteLowestFitClassifier() 
 	--print("HERe2")
@@ -604,23 +581,6 @@ function hFES:clearRollouts()
 
 end
 
--- 	local values = {}
--- 	for mov = 1, #moves do 
-
--- 		local matchSet = {}
--- 		local foveationSet = self.problem:getFoveationSet()		
--- 		for i = 1, #foveationSet do 
--- 			local M = self.getMatchSet()
--- 			table.insert(matchSet, M)  
--- 		end
--- 		-- Calculate value from MatchSet 
-
--- 	end
-
--- 	return values
-
--- end
-
 function hFES:getValues(moves, allScores, _niched)
 	local niched
 	if _niched == false then
@@ -687,33 +647,22 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 	else
 		niched = true
 	end
-	-- print("moves:")
-	-- print(moves)
 	local foveationSet = self.problem:getFoveationSet()
-	-- print("len f_set:" .. #foveationSet)
 	local matchedSet = {}
 	local foveationWindows = {}
 	local classifiersToWindows = {}
 	for i,foveationPosition in ipairs(foveationSet) do
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
 			table.insert(foveationWindows,foveationWindow)
-			-- foveationWindow.matchings = self:matchClassifiers(foveationWindow) 
-			-- self:createHiddenWeightMatrix()
 			foveationWindow.matchings = self:matchClassifiersFast(foveationWindow) 
-
 
 			--Update the matchSetEstimates of classifiers (estimates the size of the matching set over all foveation positions for this classiifer )
 			for i,m in ipairs(foveationWindow.matchings) do
 					self.classifiers[m].matchSetEstimate = 0.9*self.classifiers[m].matchSetEstimate  + 0.1*#foveationWindow.matchings
-					--print("MATCH ESTIMATE = " .. self.classifiers[m].matchSetEstimate)
 			end
 
-			-- print("#matchings start:" .. #foveationWindow.matchings)
 			if #foveationWindow.matchings == 0 and visualize == false then
-				-- self:deleteExcessClassifiers()
 				self:createClassifier(#foveationSet, foveationWindow,0.5, score, niched)
-				-- print("Creating classifier. Score = " .. score)
-
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -723,7 +672,14 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 					classifiersToWindows[m]={#foveationWindows}
 				end
 			end
-			-- print("#matchings end:" .. #foveationWindow.matchings)
+			-- add unique boardstate and attatch to classifiers
+			local uniqueBS = self:addUniqueBS(foveationWindow)
+			-- print("uniqueBS:" .. tostring(uniqueBS))
+			if uniqueBS ~= nil then
+				for _,classifierId in ipairs(foveationWindow.matchings) do
+					table.insert(self.classifiers[classifierId].matchedBoardStates,uniqueBS)
+				end
+			end
 		end
 	end
 
@@ -992,5 +948,3 @@ end
 function hFES:bip()
  print('bip')
 end
-
-

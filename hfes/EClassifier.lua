@@ -13,7 +13,8 @@ function EClassifier:__init()
 	self.relativeAccuracy = 0 
 	self.accuracy = 0 --This is to be set in updateValue. 
 	self.error = 0 
-	self.totalHashes = 0 
+	self.totalHashes = 0
+	self.matchedBoardStates = {}
 end
 
 function EClassifier:setTotalHashes()

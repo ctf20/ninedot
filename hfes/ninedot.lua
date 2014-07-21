@@ -398,8 +398,7 @@ function ninedot:getFoveationSet()
 			-- print("lastPP")
 			-- print(foveationWindow.lastPP)
 			-- foveationWindow.binaryVector = self:foveationWindowBinaryClassifier(foveationWindow)
-			foveationWindow.inputVector = self:getInputVector(foveationWindow)
-			
+			foveationWindow.inputVector,foveationWindow.inputVectorHash = self:getInputVector(foveationWindow)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
 		foveationPosition.dotCord = self.bs.dotsCords[i]
@@ -484,6 +483,7 @@ end
 function ninedot:getInputVector(window)
 
 	local inputV = {}
+	local hash = ""
 	for _,structure in ipairs({window.dots,window.linesMatrix,window.pointMatrix}) do 
 		for i = 1, structure:size()[1] do
 			for j = 1, structure:size()[2] do
@@ -500,10 +500,10 @@ function ninedot:getInputVector(window)
 		end
 	end
 	table.insert(inputV, 1) --This is a 1 to multiply the bias weight with. 
-
+	hash = table.concat(inputV)
 	inputV = torch.Tensor(inputV)
 
-	return inputV 
+	return inputV,hash
 end
 
 -- function ninedot:foveationWindowBinaryClassifier(window)
