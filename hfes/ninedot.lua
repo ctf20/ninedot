@@ -40,8 +40,30 @@ function ninedot:__init(N, K, boardSize)
 		print('here making dots') 
 		-- local x = math.random(1, self.boardSize)
 		-- local y = math.random(1, self.boardSize)
-		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		--local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		--local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		local x 
+		local y 
+		--TWO DOT CONFIGURATIONS WILL BE PRODUCED ONLY 
+		local typeD = math.random(0,1)
+		if num_dots_made == 1 then 
+			if typeD == 0 then 
+				 x = 1
+				 y = 2
+			else
+				x = 2
+				y = 1
+			end
+		else
+			if typeD == 1 then 
+				 x = 2
+				 y = 3
+			else
+				x = 3
+				y = 2
+			end
+		end
+
 		if self.bs.dots[x][y] == -1 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1
@@ -104,8 +126,29 @@ function ninedot:resetBoardState()
 		print('here making dots') 
 		--local x = math.random(1, self.boardSize)
 		--local y = math.random(1, self.boardSize)
-		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		-- local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		-- local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		local x 
+		local y 
+		--TWO DOT CONFIGURATIONS WILL BE PRODUCED ONLY 
+		local typeD = math.random(0,1)
+		if num_dots_made == 1 then 
+			if typeD == 0 then 
+				 x = 1
+				 y = 2
+			else
+				x = 2
+				y = 1
+			end
+		else
+			if typeD == 1 then 
+				 x = 2
+				 y = 3
+			else
+				x = 3
+				y = 2
+			end
+		end
 		if self.bs.dots[x][y] == -1 then 
 			self.bs.dots[x][y] = 1
 			self.tBoard[x][y] = 1

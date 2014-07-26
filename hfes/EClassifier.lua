@@ -15,6 +15,7 @@ function EClassifier:__init()
 	self.error = 0 
 	self.totalHashes = 0
 	self.matchedBoardStates = {}
+	self.age = 0
 end
 
 function EClassifier:setTotalHashes()
@@ -39,7 +40,7 @@ function EClassifier:setValue(value)
 end
 
 function EClassifier:calcFitness()
-	self.fitness = 0.9* self.fitness + 0.1 * math.pow(self.weight, 2) 
+	self.fitness = 0.9* self.fitness + 0.1 * math.abs(self.weight) 
 	return self.fitness  
 end
 

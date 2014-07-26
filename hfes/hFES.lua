@@ -14,13 +14,32 @@ function hFES:__init(problem)
 	-- print("#self.classifiers:" .. #self.classifiers)
 	self.numClassifiers = 0
 	self.rollouts = {} --Stores the set of active classifiers
-	self.pop_max = 1000
+	self.pop_max = 400
 	self.hiddenWeightMatrix = self:createFixedMatrix()
 	self.indexesToClassifierIndexes = {}
 	self.classifierFitnesses = {}
 	self.averageFitness = 0
+
 	self.allBoardStatesDict = {}
 	self.allBoardStatesMatrix = nil
+	self.allBoardStatesToClassifiers = {}
+	self.allBoardStatesAndClassifiersMatrix = nil
+	self.allBoardStatesScores = {}
+
+	self.coveringsPerRollout = {0}
+	self.deletionsPerRollout = {0}
+	self.deletionFitnessPerRollout = {{}}
+	self.deletionAgePerRollout = {{}}
+	self.deletionWeightPerRollout = {{}}
+	self.deletionGeneralityPerRollout = {{}}
+	self.deletionAvgBSScorePerRollout = {{}}
+	self.performancePerRollout = {}
+	self.numClassifiersPerRollout = {}
+
+	self.timeCount = 0
+	self.classifierOrderings = {}
+	self.currentMove = 0
+	self.epsilon = 0.05
 end
 
 function hFES:createFixedMatrix() 
@@ -47,24 +66,38 @@ function hFES:boardStateUnique(bs,hash)
 	end
 end
 
-function hFES:addUniqueBS(bs,hash)
+function hFES:addUniqueBS(bs,score,hash)
 	local hash = hash or bs.inputVectorHash
-	-- print("hash")
-	-- print(hash)
+	local score = score or 0
 	if self:boardStateUnique(bs,hash) then
-		print("not seen")
 		if self.allBoardStatesMatrix == nil then
 			self.allBoardStatesMatrix = bs.inputVector:reshape(bs.inputVector:size()[1],1)
+			self.allBoardStatesAndClassifiersMatrix = torch.Tensor(1,self.pop_max)
 		else
 			self.allBoardStatesMatrix = torch.cat(self.allBoardStatesMatrix,bs.inputVector:reshape(bs.inputVector:size()[1],1))
+			self.allBoardStatesAndClassifiersMatrix = torch.cat(
+						self.allBoardStatesAndClassifiersMatrix:t(),torch.Tensor(1,self.pop_max
+							):fill(0):t()):t()
 		end
 		local id = self.allBoardStatesMatrix:size()[2]
-		plPretty.dump(self.allBoardStatesMatrix:size())
 		self.allBoardStatesDict[hash] = id
+		self.allBoardStatesToClassifiers[id] = {}
+		-- print("score:",score)
+		table.insert(self.allBoardStatesScores,score)
 		return id
 	else
 		return nil
 	end
+end
+
+function hFES:createClassifierOrderingTable()
+	local ids = {}
+	for i=1,self.numClassifiers do
+		table.insert(ids,i)
+	end
+	table.sort(ids,function(a,b) return self.classifiers[a].age < self.classifiers[b].age end)
+	self.classifierOrderings = ids
+	return self.classifierOrderings
 end
 
 function shuffled(tab)
@@ -77,145 +110,14 @@ return res
 end
 
 
-function hFES:updateRollout(activeClassifiers, instantScore, foveationWindowsMoves, classifersToWindowsMoves)
+function hFES:updateRollout(activeClassifiers, instantScore, foveationWindowsMoves, classifersToWindowsMoves, newlyCreatedClassifiers)
 
 	table.insert(self.rollouts, {	reward = instantScore, activeClassifiers = activeClassifiers,
-									foveationWindows=foveationWindowsMoves, classifiersToWindows=classifersToWindowsMoves})
+									foveationWindows=foveationWindowsMoves, classifiersToWindows=classifersToWindowsMoves,
+									newlyCreatedClassifiers=newlyCreatedClassifiers
+									})
 
 end
-
--- function hFES:evolveClassifiers(niched) --Evolve the classifiers!! :)
--- 	local niched = niched or true
--- --Choose two classifiers from each of the moves in the rollout 
--- 	local MAX_TOURNAMENTS = 1 
--- 	local POP_MAX = 100
--- 	for r = 1, #self.rollouts do --For each rollout, get the population 
--- 		local pop = self.rollouts[r].activeClassifiers
-
--- 		for num_tournaments = 1, MAX_TOURNAMENTS do
--- 			local median
--- 			--Choose two classifiers at random
--- 			local a_id = pop[math.random(1, #pop)]
--- 			local b_id = pop[math.random(1, #pop)]
--- 			local a = self.classifiers[a_id]
--- 			local b = self.classifiers[b_id]
-
--- 			--Only replicate if both are beyond a certain age. 
--- 			if a.valueHistory:storage():size() < 5 or b.valueHistory:storage():size() < 5 then 
--- 				--print("value history = " .. a.valueHistory:storage():size())
--- 				--print("value history = " .. b.valueHistory:storage():size())
--- 				--print("NOT REPLICATING ************************************")
--- 				return 
--- 			else
--- 			-- 	print("REPLICATING**************^^^^^^^^^^^^^^^^^^^^&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
--- 			-- 	print("value history = " .. a.valueHistory:storage():size())
--- 			-- 	print("value history = " .. b.valueHistory:storage():size())
--- 			end
-
--- 			-- while( a == b) do 
--- 			-- 	local b = math.random(1,#pop)
--- 			-- end
--- 			local fita = a.fitness
--- 			local fitb = b.fitness
-			
--- 			local winner 
--- 			local loser 
-
--- 			-- if fita > fitb then 
--- 			-- 	winner = a
--- 			-- 	winner_id = a_id
--- 			-- 	loser = b
--- 			-- 	loser_id = b_id
--- 			-- else
--- 			-- 	loser = a
--- 			-- 	loser_id = a_id
--- 			-- 	winner = b
--- 			-- 	winner_id = b_id
--- 			-- end
--- 			--print("fit a = " .. fita .. "fitb = " .. fitb .. " total hash a = ".. a.totalHashes .. " tot hash b = " .. b.totalHashes)
-			
--- 			--TOURNAMENT SELECTION IS NOW A MULTI-OBJECTIVE FUNCTION OF FITNESS AND GENERALITY 
--- 			if ( fita > fitb and a.totalHashes >= b.totalHashes) or ( fita >= fitb and a.totalHashes > b.totalHashes) then 
-				
--- 				winner = a
--- 				winner_id = a_id
--- 				loser = b
--- 				loser_id = b_id
-
--- 			elseif ( fitb > fita and b.totalHashes >= a.totalHashes) or ( fitb >= fita and b.totalHashes > a.totalHashes) then 
-
--- 				loser = a
--- 				loser_id = a_id
--- 				winner = b
--- 				winner_id = b_id
--- 			else
--- 				if math.random() < 0.5 then 
--- 					winner = a
--- 					winner_id = a_id
--- 					loser = b
--- 					loser_id = b_id
--- 				else
--- 					loser = a
--- 					loser_id = a_id
--- 					winner = b
--- 					winner_id = b_id
--- 				end
--- 			end
--- 			if niched == false then
--- 				-- get fitness from population
--- 				median = self.averageFitness
--- 			else
--- 				-- calculate fitness from niche
--- 				median = util.median(self:getClassifierFitnesses(pop))
--- 			end
--- 			--Winner will be replicated
--- 			local child = winner:replicate(median)
--- 			--And mutated
--- 			-- get specific foveation windows for winner
--- 			local fIds = self.rollouts[r].classifiersToWindows[winner_id]
--- 			-- plPretty.dump(self.rollouts[r].classifiersToWindows)
--- 			-- for k,v in pairs(self.rollouts[r].classifiersToWindows) do
--- 			-- 	print(k)
--- 			-- end
--- 			-- print("fIds:**********************************************************************8")
--- 			-- plPretty.dump(fIds)
--- 			-- print("winner:",winner)
--- 			local windows = {}
--- 			for i,id in ipairs(fIds) do
--- 				table.insert(windows,self.rollouts[r].foveationWindows[id])
--- 			end
--- 			child:mutate(windows)
--- 			-- print("parent:")
--- 			-- plPretty.dump(winner.classifier.grid.grid)
--- 			-- plPretty.dump(winner.classifier.lastPP.pointMatrix)
--- 			-- print("child:")
--- 			-- plPretty.dump(child.classifier.grid.grid)
--- 			-- plPretty.dump(child.classifier.lastPP.pointMatrix)
--- 			-- print("window")
--- 			-- plPretty.dump(windows[1].dots)
--- 			-- --And must now be injected into the self.classifiers data structure. 
--- 			--table.insert(self.classifiers,child)
--- 			--If self.classifers > LIMIT then remove the worst classifier. 
--- 			--  if self.numClassifiers > POP_MAX then 
--- 			-- 	--print("HERe1")
--- 			-- 	-- print(self.classifiers)
--- 			-- 	-- holeNumber = self:deleteWorstClassifier(POP_MAX)
--- 			-- 	self.classifiers[holeNumber] = child
--- 			-- else
--- 			local insertIndex = self:deleteAndGetIndex()
--- 			self.classifiers[insertIndex] = child
--- 			self.hiddenWeightMatrix[insertIndex] = child.classifier.hiddenWeights
--- 			self.classifierFitnesses[insertIndex] = child.fitness
--- 			self:updateAverageFitness()
--- 			--print("CREATING CHILD ")
--- 			-- end
-
--- 		end
-
-
--- 	end
-
--- end
 
 function hFES:evolveClassifiers(_niched) --Evolve the classifiers!! :)
 	local niched
@@ -230,35 +132,34 @@ function hFES:evolveClassifiers(_niched) --Evolve the classifiers!! :)
 	if niched then
 		for r = 1, #self.rollouts do --For each rollout, get the population 
 			local pop = self.rollouts[r].activeClassifiers
-			for num_tournaments = 1, MAX_TOURNAMENTS do
-				local median
-				local winner,loser,winner_id,loser_id = self:binaryTournament(pop)
-				if winner ~= nil then
-					if niched == false then
-						-- get fitness from population
+			if pop ~= nil and #pop > 0 then
+				for num_tournaments = 1, MAX_TOURNAMENTS do
+					local median
+					local winner,loser,winner_id,loser_id = self:binaryTournament(pop)
+					if winner ~= nil then
+						-- median = util.median(self:getClassifierFitnesses(pop))
+						-- median = util.mean(self:getClassifierFitnesses(pop))
 						median = self.averageFitness
-					else
-						-- calculate fitness from niche
-						median = util.median(self:getClassifierFitnesses(pop))
+						print("median based on matched:" .. median)
+						--Winner will be replicated
+						local child = winner:replicate(median)
+						--And mutated
+						-- get specific foveation windows for winner
+						local fIds = self.rollouts[r].classifiersToWindows[winner_id]
+						-- plPretty.dump(self.rollouts[r].classifiersToWindows)
+						-- for k,v in pairs(self.rollouts[r].classifiersToWindows) do
+						-- 	print(k)
+						-- end
+						-- print("fIds:**********************************************************************8")
+						-- plPretty.dump(fIds)
+						-- print("winner:",winner)
+						local windows = {}
+						for i,id in ipairs(fIds) do
+							table.insert(windows,self.rollouts[r].foveationWindows[id])
+						end
+						child:mutate(windows)
+						self:insertNewClassifier(child,true)
 					end
-					--Winner will be replicated
-					local child = winner:replicate(median)
-					--And mutated
-					-- get specific foveation windows for winner
-					local fIds = self.rollouts[r].classifiersToWindows[winner_id]
-					-- plPretty.dump(self.rollouts[r].classifiersToWindows)
-					-- for k,v in pairs(self.rollouts[r].classifiersToWindows) do
-					-- 	print(k)
-					-- end
-					-- print("fIds:**********************************************************************8")
-					-- plPretty.dump(fIds)
-					-- print("winner:",winner)
-					local windows = {}
-					for i,id in ipairs(fIds) do
-						table.insert(windows,self.rollouts[r].foveationWindows[id])
-					end
-					child:mutate(windows)
-					self:insertNewClassifier(child)
 				end
 			end
 		end
@@ -281,25 +182,33 @@ end
 
 function hFES:insertNewClassifier(classifier,doMatching)
 	local insertIndex = self:deleteAndGetIndex()
+	print("insertIndexINC:" .. insertIndex)
 	self.classifiers[insertIndex] = classifier
 	self.hiddenWeightMatrix[insertIndex] = classifier.classifier.hiddenWeights
 	self.classifierFitnesses[insertIndex] = classifier.fitness
 	self:updateAverageFitness()
 	-- print("inserted new child:" .. insertIndex)
 	if doMatching then
-		self:matchClassifierToHistoricBoardstates(classifier)
+		self:matchClassifierToHistoricBoardstates(classifier,insertIndex)
 	end
+	classifier.age = self.timeCount
+	classifier.weight = 0.01
+	classifier.valueHistory[1] = 0.01
+	self:createClassifierOrderingTable()
 end
 
-function hFES:matchClassifierToHistoricBoardstates(classifier)
+function hFES:matchClassifierToHistoricBoardstates(classifier,index)
 	-- print("classifier.hiddenWeights")
 	local matchings = self.allBoardStatesMatrix:t()*classifier.classifier.hiddenWeights
 	-- print("matchings")
 	-- print(matchings)
+	print("matchings:" .. #self.allBoardStatesToClassifiers)
 	for id=1,matchings:size()[1] do
 		if matchings[id] > 0 then
-			-- print("matched" .. id)
+			print("matched" .. id)
 			table.insert(classifier.matchedBoardStates,id)
+			table.insert(self.allBoardStatesToClassifiers[id],index)
+			self.allBoardStatesAndClassifiersMatrix[id][index] = 1
 		end
 	end
 end
@@ -378,12 +287,50 @@ function hFES:getClassifierFitnesses(ids)
 end
 
 function hFES:deleteClassifier()
-	--local deleteIndex = self:deleteLowestFitClassifier()
+	local deleteIndex = self:deleteLowestFitClassifier()
 	--local deleteIndex = self:deleteLeastHashes()
-	local deleteIndex = self:deleteXCS()
+	-- local deleteIndex = self:deleteXCS()
+	local matchedState = #self.classifiers[deleteIndex].matchedBoardStates
+	local scores = 0
+	-- plPretty.dump(self.allBoardStatesScores)
+	for _,bs in ipairs(self.classifiers[deleteIndex].matchedBoardStates) do
+		scores = scores + self.allBoardStatesScores[bs]
+	end
+	local avgScores = scores/matchedState
+	table.insert(self.deletionAvgBSScorePerRollout[#self.deletionAvgBSScorePerRollout],avgScores)
+	-- print("matchedState")
+	-- print(self.classifiers[deleteIndex].matchedBoardStates[matchedState])
+	while matchedState ~= nil and  matchedState > 0 do
+		local index
+		local removeFromBS = self.classifiers[deleteIndex].matchedBoardStates[matchedState]
+		-- print("deleteIndex:" .. deleteIndex)
+		-- print("matchedState")
+		-- print(removeFromBS)
+		-- print("classifiers")
+		-- plPretty.dump(self.allBoardStatesToClassifiers[removeFromBS])
+		for i=1,#self.allBoardStatesToClassifiers[removeFromBS] do
+			local class = self.allBoardStatesToClassifiers[removeFromBS][i]
+			if class == deleteIndex then
+				index = i
+				break
+			end
+		end
+		table.remove(self.allBoardStatesToClassifiers[removeFromBS],index)
+		table.remove(self.classifiers[deleteIndex].matchedBoardStates)
+		self.allBoardStatesAndClassifiersMatrix[removeFromBS][deleteIndex] = 0
+		matchedState = #self.classifiers[deleteIndex].matchedBoardStates
+	end
+	print("deleting:" .. deleteIndex)
+	print("weight:" .. self.classifiers[deleteIndex].weight .." fitness:" .. self.classifiers[deleteIndex].fitness)
+	self.deletionsPerRollout[#self.deletionsPerRollout] = self.deletionsPerRollout[#self.deletionsPerRollout] + 1
+	table.insert(self.deletionFitnessPerRollout[#self.deletionFitnessPerRollout],self.classifiers[deleteIndex].fitness)
+	table.insert(self.deletionWeightPerRollout[#self.deletionWeightPerRollout],self.classifiers[deleteIndex].weight)
+	table.insert(self.deletionAgePerRollout[#self.deletionAgePerRollout],self.timeCount-self.classifiers[deleteIndex].age)
+	self.classifiers[deleteIndex] = nil
 	self.classifierFitnesses[deleteIndex] = nil
 --	local deleteIndex = self:deleteXCS(self.pop_max)
 	self.numClassifiers = self.numClassifiers - 1
+	-- self:createClassifierOrderingTable()
 	return deleteIndex
 end
 
@@ -400,7 +347,7 @@ function hFES:deleteXCS()
 
 	--Delete it here
 	--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
-	self.classifiers[worstClassifier] = nil 
+	-- self.classifiers[worstClassifier] = nil 
 	-- self.numClassifiers = self.numClassifiers - 1
 	return worstClassifier
 end
@@ -420,7 +367,7 @@ function hFES:deleteLeastHashes(pop_max)
 
 		--Delete it here
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
-		self.classifiers[worstClassifier] = nil 
+		-- self.classifiers[worstClassifier] = nil 
 --		self.numClassifiers = self.numClassifiers - 1
 		return worstClassifier
 end
@@ -439,7 +386,7 @@ function hFES:deleteLowestFitClassifier()
 
 		--Delete it here
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
-		self.classifiers[worstClassifier] = nil 
+		-- self.classifiers[worstClassifier] = nil 
 		--self.numClassifiers = self.numClassifiers - 1
 		return worstClassifier
 end
@@ -460,8 +407,8 @@ function hFES:deleteLowestWeightMagClassifier(pop_max)
 
 		--Delete it here
 		--print("fitness of deleted classifer = " .. self.classifiers[worstClassifier].fitness)
-		self.classifiers[worstClassifier] = nil 
-		self.numClassifiers = self.numClassifiers - 1
+		-- self.classifiers[worstClassifier] = nil 
+		-- self.numClassifiers = self.numClassifiers - 1
 	
 	end
 
@@ -483,9 +430,10 @@ function hFES:makeMoveTD(_niched)
 
 
 	local  allScores = torch.Tensor(self.problem:getScores(move_id))
-	allScores = allScores - preScore
+	-- allScores = allScores - preScore
+	-- allScores = allScores
 
-	local values, activeClassifiers, foveationWindowsMoves, classifersToWindowsMoves = self:getValues(move_id, allScores, niched)
+	local values, activeClassifiers, foveationWindowsMoves, classifersToWindowsMoves, newlyCreatedClassifiers = self:getValues(move_id, allScores, niched)
 	-- local chosenMove = self:eGreedyChoice(move_id,values)
 	-- self.problem:updateBoard(chosenMove)	
 	--local score = self.problem:getScores(move_id) --I'm going to be using the getScores and moving according to get scores for now. 
@@ -493,16 +441,17 @@ function hFES:makeMoveTD(_niched)
 	self.problem:updateBoard(move_id[chosenMove])
 
 	local bla2, postScore = self.problem:getScoreCurrentPosition()
-	self:updateRollout(activeClassifiers[chosenMove], postScore-preScore, foveationWindowsMoves[chosenMove], classifersToWindowsMoves[chosenMove])
+	self:updateRollout(activeClassifiers[chosenMove], postScore, foveationWindowsMoves[chosenMove], classifersToWindowsMoves[chosenMove], newlyCreatedClassifiers)
 	-- plPretty.dump(self.classifierFitnesses)
 
 end
 
 function hFES:updateValues()
-
 	local DISCOUNT = 0
 	local ERROR_THRESHOLD = 0.01
 	local values = {}
+	-- remove new classifiers from previous rollouts
+	self:cleanRollouts()
 	for i = 1, #self.rollouts do 
 		local v = 0 
 		--print(#self.rollouts[i].activeClassifiers)
@@ -564,7 +513,12 @@ function hFES:updateValues()
 			-- print(" total accuracy   = " .. totalAccuracy)
 			-- print(" accuracy  = " .. self.classifiers[self.rollouts[i].activeClassifiers[j]].accuracy)
 			local classId = self.rollouts[i].activeClassifiers[j]
+			print(classId .. "fit before:")
+			print(self.classifiers[classId].fitness)
 			self.classifiers[classId]:calcFitness()
+			print(classId .. "fit after:")
+			print(self.classifiers[classId].fitness)
+
 			self.classifierFitnesses[classId] = self.classifiers[classId].fitness
 		end
 		--END: Calc fitness here after the relative accuracy of the activeClassifiers is known. 
@@ -573,6 +527,27 @@ function hFES:updateValues()
 	self:updateAverageFitness()
 
 
+end
+
+function hFES:cleanRollouts()
+	-- make sure a deleted rollout is not in the matched set
+	for i=#self.rollouts,1,-1 do
+		local newlyCreatedClassifiers = self.rollouts[i].newlyCreatedClassifiers
+		for j=i-1,1,-1 do
+			local previousClassifiers = self.rollouts[j].activeClassifiers
+			-- if previousClassifiers ~= nil then
+				for l=#previousClassifiers,1,-1 do
+					for _,replacement in ipairs(newlyCreatedClassifiers) do
+						if previousClassifiers[l] == replacement then
+							print("[CR] removing:" .. previousClassifiers[l])
+							table.remove(previousClassifiers,l)
+							break
+						end
+					end
+				end
+			-- end
+		end
+	end
 end
 
 function hFES:clearRollouts()
@@ -593,13 +568,15 @@ function hFES:getValues(moves, allScores, _niched)
 	local values = {}
 	local foveationWindowsMoves = {}
 	local classifersToWindowsMoves = {}
+	local matchedSoFar = {}
+	local newlyCreatedClassifiers = {}
 	for i,move in ipairs(moves) do
 		-- print("adding: ***********************************")
 		-- print(self.problem.bs.pp)
 		-- print(move)
 		self.problem:makePotentialMove(move)
 		-- print(self.problem.bs.pp)
-		local matchedClassifiers , foveationWindows , classifiersToWindows = self:getActiveClassifiersForMove(move, false, allScores[i], niched)
+		local matchedClassifiers , foveationWindows , classifiersToWindows = self:getActiveClassifiersForMove(move, false, allScores[i], newlyCreatedClassifiers,niched)
 		table.insert(activeClassifiers,matchedClassifiers)
 		table.insert(values, self:getValuesFromActiveClassifiers(matchedClassifiers))
 		table.insert(foveationWindowsMoves,foveationWindows)
@@ -611,7 +588,7 @@ function hFES:getValues(moves, allScores, _niched)
 	-- 	print(values[i])
 	-- end
 
-	return values, activeClassifiers, foveationWindowsMoves, classifersToWindowsMoves
+	return values, activeClassifiers, foveationWindowsMoves, classifersToWindowsMoves, newlyCreatedClassifiers
 end
 
 function hFES:getValuesFromActiveClassifiers(matchedClassifiers)
@@ -640,7 +617,7 @@ function hFES:getCurrentActiveClassifiers(moves, visualize, score)
 	return activeClassifiers
 end
 
-function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
+function hFES:getActiveClassifiersForMove(move, visualize, score, newlyCreatedClassifiers, _niched)
 	local niched
 	if _niched == false then
 		niched = false
@@ -651,8 +628,10 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 	local matchedSet = {}
 	local foveationWindows = {}
 	local classifiersToWindows = {}
+	-- update the newlyCreatedClassifiersSet
 	for i,foveationPosition in ipairs(foveationSet) do
 		for j,foveationWindow in ipairs(foveationPosition.foveationWindows) do
+			local newClassifierId
 			table.insert(foveationWindows,foveationWindow)
 			foveationWindow.matchings = self:matchClassifiersFast(foveationWindow) 
 
@@ -662,7 +641,16 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 			end
 
 			if #foveationWindow.matchings == 0 and visualize == false then
-				self:createClassifier(#foveationSet, foveationWindow,0.5, score, niched)
+				newClassifierId = self:createClassifier(
+														#foveationSet,
+														foveationWindow,
+														1.0,
+														score,
+														niched)
+				-- print("newClassifierId")
+				-- print(newClassifierId)
+				-- update the newlyCreatedClassifiers set
+				util.addToSet(newClassifierId,newlyCreatedClassifiers)
 			end
 			self:addClassifiersToSet(foveationWindow.matchings,matchedSet)
 			for i,m in ipairs(foveationWindow.matchings) do
@@ -673,12 +661,19 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 				end
 			end
 			-- add unique boardstate and attatch to classifiers
-			local uniqueBS = self:addUniqueBS(foveationWindow)
+			local uniqueBS = self:addUniqueBS(foveationWindow,score)
+			if (#self.allBoardStatesToClassifiers ~= #self.allBoardStatesScores) then
+				os.exit()
+			end
 			-- print("uniqueBS:" .. tostring(uniqueBS))
-			if uniqueBS ~= nil then
+			if uniqueBS ~= nil and newClassifierId == nil then
 				for _,classifierId in ipairs(foveationWindow.matchings) do
 					table.insert(self.classifiers[classifierId].matchedBoardStates,uniqueBS)
+					table.insert(self.allBoardStatesToClassifiers[uniqueBS],classifierId)
+					self.allBoardStatesAndClassifiersMatrix[uniqueBS][classifierId] = 1
 				end
+			elseif newClassifierId ~= nil then
+				self:matchClassifierToHistoricBoardstates(self.classifiers[newClassifierId],newClassifierId)
 			end
 		end
 	end
@@ -696,6 +691,13 @@ function hFES:getActiveClassifiersForMove(move, visualize, score, _niched)
 			os.exit()
 		end
 	end
+
+	-- for k,v in ipairs(self.classifiers) do
+	-- 	print("c:" .. k)
+	-- 	if #self.classifiers[k].matchedBoardStates == 0 then
+	-- 		os.exit()
+	-- 	end
+	-- end
 
 	local activeClassifiers = util.getKeywords(matchedSet)
 
@@ -737,14 +739,19 @@ end
 
 function hFES:deleteAndGetIndex()
 	local insertIndex
-	if self.numClassifiers >= self.pop_max then
-		print("deleting class")
+	local start = self.numClassifiers
+	if self.numClassifiers == self.pop_max then
+		-- print("deleting class")
 		insertIndex = self:deleteClassifier()
+		self.numClassifiers = self.numClassifiers + 1
 	else
 		self.numClassifiers = self.numClassifiers + 1
 		insertIndex = self.numClassifiers
-		print("not deleting, index:" )
-		print(insertIndex)
+		-- print("not deleting, index:" )
+		-- print(insertIndex)
+	end
+	if start == 50 and self.numClassifiers < 50 then
+		os.exit()
 	end
 	return insertIndex
 end
@@ -758,14 +765,9 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score,_
 	end
 	local score = score or 0.0
 	local specificity = specificity or 0.1
-	print("Creating classifier*****/*****************************")
-	-- print(foveationWindow.dots)
-	-- print("lines")
-	-- print(foveationWindow.lines)
-	-- print("lastPP")
-	-- print(foveationWindow.lastPP)
-	-- print("delete old classifier")
+	print("Creating covering classifier*****/*****************************")
 	local insertIndex = self:deleteAndGetIndex()
+	print("insertIndexcc:" .. insertIndex)
 	-- print("creating classifier")
 	local classifier = hfes.NineDotClassifier()
 	classifier:buildClassifier(	foveationWindow.dots,
@@ -774,18 +776,6 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score,_
 								foveationWindow,
 								specificity
 								)
-	--print("classifier hidden weights")
-	--plPretty.dump(classifier.hiddenWeights)
-	-- print("classifier grid")
-	-- print(classifier.grid.grid)
-	-- print("classifier lines")
-	-- print(classifier.lines.lines)
-	-- print("classifier lastPP")
-	-- print(classifier.lastPP.point)
-	-- print("match:")
-	-- print(classifier:match(	foveationWindow.dots,
-	--  						foveationWindow.lines,
-	--  						foveationWindow.lastPP))
 	-- TO DO PUT IN ECLASSIFIER> 
 	print("testing match")
 	print(classifier.hiddenWeights*foveationWindow.inputVector)
@@ -799,10 +789,11 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score,_
 		os.exit()
 	end
 	local newClassifier = hfes.EClassifier()
+	newClassifier.age = self.timeCount
 	newClassifier.classifier=classifier
 	newClassifier:setTotalHashes()
-	newClassifier:setValue(score/numPositions)
-	-- newClassifier:setValue(0.01)
+	-- newClassifier:setValue(score/numPositions)
+	newClassifier:setValue(score/10)
 	if niched then
 --		newClassifier.fitness = 1.0
 		newClassifier.fitness = self.averageFitness
@@ -820,7 +811,11 @@ function hFES:createClassifier(numPositions, foveationWindow,specificity,score,_
 	self.hiddenWeightMatrix[insertIndex] = classifier.hiddenWeights
 	self.classifierFitnesses[insertIndex] = newClassifier.fitness
 	self:updateAverageFitness()
+	print("avaerageFitness:" .. self.averageFitness)
+	self:createClassifierOrderingTable()
 	-- print("inserted " .. insertIndex .." fitness " .. self.classifierFitnesses[insertIndex])
+	self.coveringsPerRollout[#self.coveringsPerRollout] = self.coveringsPerRollout[#self.coveringsPerRollout] + 1
+	return insertIndex
 end
 
 -- function hFES:matchClassifiers(foveationWindow)
@@ -872,12 +867,6 @@ function hFES:matchClassifiersFast(foveationWindow)
 	return matchingSet
 end
 
-function hFES:getMatchSet()
-
-end
-
-
-
 function hFES:printBoardState()
 	--Call the problem specific board state printer 
 	self.problem:printBoardState()
@@ -901,8 +890,8 @@ end
 
 function hFES:eGreedyChoice(move_ids, score, epsilon)
 	
-	local epsilon = epsilon or 0.05
-
+	-- local epsilon = epsilon or 0.05
+	local epsilon = self.epsilon
 	--print("In eGreedyChoice")
 	local maxScore = -1000
 	local maxChoice = -1
@@ -932,15 +921,36 @@ function hFES:getFunctionalClassifiers()
 	return pop
 end
 
-function hFES:updateAverageFitness()
-	if self.numClassifiers >= self.pop_max then
-		self.averageFitness = util.median(self.classifierFitnesses)
+function hFES:updateAverageFitness(median)
+	local median = median or false
+	-- if self.numClassifiers >= self.pop_max then
+	-- 	if median then
+	-- 		self.averageFitness = util.median(self.classifierFitnesses)
+	-- 	else
+	-- 		self.averageFitness = util.mean(self.classifierFitnesses)
+	-- 	end
+	-- else
+	-- 	local tempArray = {}
+	-- 	for k,v in pairs(self.classifierFitnesses) do
+	-- 		table.insert(tempArray,v)
+	-- 	end
+	-- 	if median then
+	-- 		self.averageFitness = util.median(tempArray)
+	-- 	else
+	-- 		self.averageFitness = util.mean(self.classifierFitnesses)
+	-- 	end
+	-- end
+	local average = 0 
+	local count = 0
+	for k,v in pairs(self.classifiers) do
+		-- if self.timeCount - v.age > 5 then
+		average = average + v.weight
+		count = count + 1
+	end
+	if count > 0 then
+		self.averageFitness = average/count
 	else
-		local tempArray = {}
-		for k,v in pairs(self.classifierFitnesses) do
-			table.insert(tempArray,v)
-		end
-		self.averageFitness = util.median(tempArray)
+		self.average = 0
 	end
 end
 

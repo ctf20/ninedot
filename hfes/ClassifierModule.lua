@@ -28,7 +28,7 @@ end
 
 function ClassifierModule:mutateMatrixLamarckian(matrix,matchingMatrix,p)
 	local p = p or (1/(matrix:storage():size()*1.0))
-	--p = 0.0
+	-- p = 0.0
 	for i=1,matrix:storage():size() do
 		if matrix:storage()[i]  == 0 and math.random() < p then
 			matrix:storage()[i] = self:getLamarckianElement(matchingMatrix,i)

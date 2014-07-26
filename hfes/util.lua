@@ -9,6 +9,15 @@ function util.median (numlist)
     return numlist[math.ceil(#numlist/2)]
 end
 
+function util.mean(values)
+  local sum,n = 0,#values
+  for i = 1,n do
+    sum = sum + values[i]
+  end
+  local mean = sum/n
+  return mean
+end
+
 local function strToTable(input)
   local t = {}
   input:gsub(".",function(c) table.insert(t,c) end)
