@@ -40,29 +40,29 @@ function ninedot:__init(N, K, boardSize)
 		print('here making dots') 
 		-- local x = math.random(1, self.boardSize)
 		-- local y = math.random(1, self.boardSize)
-		--local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		--local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
-		local x 
-		local y 
+		local x = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		local y = math.random(1+math.floor(math.sqrt(self.n)/2),self.boardSize-math.floor(math.sqrt(self.n)/2))
+		-- local x 
+		-- local y 
 		--TWO DOT CONFIGURATIONS WILL BE PRODUCED ONLY 
-		local typeD = math.random(0,1)
-		if num_dots_made == 1 then 
-			if typeD == 0 then 
-				 x = 1
-				 y = 2
-			else
-				x = 2
-				y = 1
-			end
-		else
-			if typeD == 1 then 
-				 x = 2
-				 y = 3
-			else
-				x = 3
-				y = 2
-			end
-		end
+		-- local typeD = math.random(0,1)
+		-- if num_dots_made == 1 then 
+		-- 	if typeD == 0 then 
+		-- 		 x = 1
+		-- 		 y = 2
+		-- 	else
+		-- 		x = 2
+		-- 		y = 1
+		-- 	end
+		-- else
+		-- 	if typeD == 1 then 
+		-- 		 x = 2
+		-- 		 y = 3
+		-- 	else
+		-- 		x = 3
+		-- 		y = 2
+		-- 	end
+		-- end
 
 		if self.bs.dots[x][y] == -1 then 
 			self.bs.dots[x][y] = 1
@@ -229,8 +229,13 @@ function ninedot:getScores(moves)
 
 end
 
-
-function ninedot:getScoreCurrentPosition()
+function ninedot:getScoreCurrentPosition(_points)
+	local points
+	if _points == nil then
+		points = self.bs.pp
+	else
+		points = _points
+	end
 	local dots_covered = {}
 	for i = 1, self.boardSize do 
 		dots_covered[i] = {}
@@ -238,16 +243,13 @@ function ninedot:getScoreCurrentPosition()
 			dots_covered[i][j] = 0
 		end
 	end
-	if #self.bs.pp == 1 then
-		dots_covered = self:getDotsCovered(self.bs.pp[1],nil,dots_covered)
+	if #points == 1 then
+		dots_covered = self:getDotsCovered(points[1],nil,dots_covered)
 	else
-		for i=1,#self.bs.pp-1 do
-			print("moving")
-			dots_covered = self:getDotsCovered(self.bs.pp[i],self.bs.pp[i+1],dots_covered)
+		for i=1,#points-1 do
+			dots_covered = self:getDotsCovered(points[i],points[i+1],dots_covered)
 		end
 	end
-
-	--self:printDotsCovered(dots_covered)
 	return dots_covered , self:countDotsCovered(dots_covered)
 end
 
@@ -361,69 +363,6 @@ end
 function ninedot:undoLastMove()
 	self.bs.pp[#self.bs.pp] = nil
 end
--- function ninedot:getFoveationSet()
--- 	local allFoveationWindows = {}
--- 	-- the center will be determined by the foveation window
--- 	for i,center in ipairs(self.bs.dotsCords) do
--- 		-- we may have to loop over different classifier sizes
--- 		centerRelativeToLargeBoard = {center[1]+self.boardDiag+math.floor(self.boardSize/2),center[2]+self.boardDiag+math.floor(self.boardSize/2)}
--- 		print("c rel:")
--- 		print(centerRelativeToLargeBoard)
--- 		local foveationWindow = {dots={},lines={},lastP={}}
--- 		local row_min = centerRelativeToLargeBoard[1] - math.floor(self.foveationWindow.rows/2)
--- 		local row_max = centerRelativeToLargeBoard[1] + math.floor(self.foveationWindow.rows/2)
--- 		local col_min = centerRelativeToLargeBoard[2] - math.floor(self.foveationWindow.columns/2)
--- 		local col_max = centerRelativeToLargeBoard[2] + math.floor(self.foveationWindow.columns/2)
-
--- 		-- print(self.bs.dotsCords)
--- 		print(self.tBoard)
--- 		print("center:")
--- 		print(center)
--- 		print "sub:"
--- 		print ("" .. row_min .. "," .. row_max .. "," .. col_min .. "," .. col_max)
--- 		print(self.pseudoTBoard)
--- 		foveationWindow.dots = self.pseudoTBoard:sub(row_min,
--- 												 	 row_max,
--- 												 	 col_min,
--- 												 	 col_max):clone()
--- 		if #self.bs.pp > 1 then
--- 			for j=1,#self.bs.pp-1 do
--- 				if (self.bs.pp[j][1] >= row_min and self.bs.pp[j][1] <= row_max) and
--- 				   (self.bs.pp[j][2] >= col_min and self.bs.pp[j][2] <= col_max) and
--- 				   (self.bs.pp[j+1][1] >= row_min and self.bs.pp[j+1][1] <= row_max) and
--- 				   (self.bs.pp[j+1][2] >= col_min and self.bs.pp[j+1][2] <= col_max) then
--- 					table.insert(foveationWindow.lines,{{self.bs.pp[j][1]-row_min+1,self.bs.pp[j][2]-col_min+1},
--- 														{self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}})
--- 					if j+1 == #self.bs.pp then
--- 						foveationWindow.lastP = {self.bs.pp[j+1][1]-row_min+1,self.bs.pp[j+1][2]-col_min+1}
--- 					end
--- 				end
--- 			end
--- 		end
-
-
--- 		foveationWindow.lines = torch.Tensor(foveationWindow.lines)
--- 		print("foveationWindow:")
--- 		print(foveationWindow.dots)
--- 		print("pps:")
--- 		print(foveationWindow.lines)
--- 		print("lastP:")
--- 		print(foveationWindow.lastP)
--- 		foveationWindow.lastP = torch.Tensor(foveationWindow.lastP)
--- 		table.insert(allFoveationWindows,foveationWindow)
--- 	end
--- 	-- for i,w in ipairs(windows) do
--- 	-- 	print(w)
--- 	-- 	print("match:") 
--- 	-- 	print(hfes.utils.matchTensorWithIgnores(torch.Tensor({{1,0},{1,0}}),torch.Tensor({{1,0},{1,1}})))
--- 	-- end
--- 	-- print(self.tBoard)
--- 	-- for i=1,windows[1]:storage():size() do
--- 	-- 	print(windows[1]:storage()[i])
--- 	-- end
-
--- 	return allFoveationWindows
--- end
 
 function ninedot:getFoveationSet()
 	local foveationPositions = {}
@@ -433,14 +372,8 @@ function ninedot:getFoveationSet()
 		local foveationPosition = {center=center,relCenter=relCenter,foveationWindows={}}
 		for j,size in ipairs({{5,5}}) do
 			local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
-			-- print(foveationWindow.dots)
 			foveationWindow.lines,foveationWindow.linesMatrix = self:extractLinesInLargeWindow(foveationWindow,lPPS,size[1],size[2])
-			-- print("lines")
-			-- print(foveationWindow.lines)
 			foveationWindow.lastPP,foveationWindow.pointMatrix = self:extractLastPPInLargeWindow(foveationWindow,lPPS,size[1],size[2])
-			-- print("lastPP")
-			-- print(foveationWindow.lastPP)
-			-- foveationWindow.binaryVector = self:foveationWindowBinaryClassifier(foveationWindow)
 			foveationWindow.inputVector,foveationWindow.inputVectorHash = self:getInputVector(foveationWindow)
 			table.insert(foveationPosition.foveationWindows,foveationWindow)
 		end
@@ -449,6 +382,23 @@ function ninedot:getFoveationSet()
 	end
 	self.fovWindows = foveationPositions
 	return foveationPositions
+end
+
+function ninedot:getFoveationWindow(lPPS,center,size)
+	local relCenter = self:getLargeBoardCoordinates(center)
+	local foveationWindow = self:extractLargeWindow(relCenter,size[1],size[2])
+	foveationWindow.lines,foveationWindow.linesMatrix = self:extractLinesInLargeWindow(foveationWindow,lPPS,size[1],size[2])
+	foveationWindow.lastPP,foveationWindow.pointMatrix = self:extractLastPPInLargeWindow(foveationWindow,lPPS,size[1],size[2])
+	foveationWindow.inputVector,foveationWindow.inputVectorHash = self:getInputVector(foveationWindow)
+	return foveationWindow
+end
+
+function ninedot:getCenterWindow(pp)
+	local center = {3,3}
+	local size = {5,5}
+	local lPPS = self:createLargeBoardPPS(pp)
+	local window = self:getFoveationWindow(lPPS,center,size)
+	return window
 end
 
 function ninedot:createLargeBoardPPS(pps)
@@ -460,6 +410,8 @@ function ninedot:createLargeBoardPPS(pps)
 end
 
 function ninedot:getLargeBoardCoordinates(center)
+	print("center")
+	print(center)
 	local fromTop = math.floor(self.largeBoardWidth/2 - self.boardSize/2 + center[1])
 	-- print("fl")
 	-- print fromLeft
@@ -547,6 +499,31 @@ function ninedot:getInputVector(window)
 	inputV = torch.Tensor(inputV)
 
 	return inputV,hash
+end
+
+function ninedot:createClassifierFromWindow(window,_size)
+	local size
+	if size == nil then
+		size = 675
+	end
+	local hiddenWeights = torch.Tensor(size + 1)
+	local hash = ""
+	hiddenWeights[size + 1] = 0 -- make sure bias is 0 initially
+	local count = 1
+	for _,structure in ipairs({torch.gt(window.dots,0),torch.gt(window.linesMatrix,0),torch.gt(window.pointMatrix,0)}) do 
+		for i = 1, structure:size()[1] do
+			for j = 1, structure:size()[2] do
+				hiddenWeights[count] = structure[i][j]
+				count = count + 1
+				hash = hash .. structure[i][j]
+			end
+		end
+	end
+	local bias = -(torch.sum(torch.pow(hiddenWeights,2))-0.5)
+	hiddenWeights[size + 1] = bias
+	
+	return hiddenWeights,hash
+
 end
 
 -- function ninedot:foveationWindowBinaryClassifier(window)
